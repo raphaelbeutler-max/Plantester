@@ -2,21 +2,16 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plantester</title>
 
     <style>
         :root {
             --navy: #0f172a;
             --blue: #2563eb;
-            --blue-hover: #1d4ed8;
+            --blue-dark: #1d4ed8;
             --red: #dc2626;
-            --red-hover: #b91c1c;
+            --red-dark: #b91c1c;
             --background: #f3f4f6;
             --border: #94a3b8;
         }
@@ -27,52 +22,32 @@
 
         body {
             margin: 0;
-
             font-family: Arial, sans-serif;
-
-            background-color: var(--background);
-
+            background: var(--background);
             overflow: hidden;
         }
 
         header {
             height: 60px;
-
             padding: 0 16px 0 24px;
-
             display: grid;
-
-            grid-template-columns:
-                minmax(180px, 1fr)
-                minmax(250px, 2fr)
-                minmax(280px, 1fr);
-
+            grid-template-columns: 1fr 2fr 1fr;
             align-items: center;
-
             gap: 15px;
-
-            background-color: var(--navy);
-
+            background: var(--navy);
             color: white;
         }
 
         header h1 {
             margin: 0;
-
             font-size: 24px;
-            font-weight: bold;
         }
 
         #planName {
-            width: 100%;
-
             color: white;
-
             font-size: 17px;
             font-weight: normal;
-
             text-align: center;
-
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -80,89 +55,66 @@
 
         #actions {
             justify-self: end;
-
             display: flex;
             align-items: center;
-
             gap: 10px;
         }
 
         button {
             height: 38px;
-
             padding: 0 18px;
-
             border: none;
             border-radius: 7px;
-
             color: white;
-
             font-family: Arial, sans-serif;
             font-size: 15px;
-
             cursor: pointer;
         }
 
         #chooseButton,
         #testButton {
-            background-color: var(--blue);
+            background: var(--blue);
         }
 
         #chooseButton:hover,
         #testButton:hover {
-            background-color: var(--blue-hover);
+            background: var(--blue-dark);
         }
 
         #testButton {
             display: none;
-
             align-items: center;
-
             gap: 8px;
         }
 
         #testButton:disabled {
             opacity: 0.6;
-
             cursor: progress;
         }
 
         #testIcon {
             width: 23px;
             height: 23px;
-
             display: inline-flex;
-
             align-items: center;
             justify-content: center;
-
             border: 2px solid white;
             border-radius: 50%;
-
             font-weight: bold;
         }
 
         #closeButton {
             display: none;
-
             width: 38px;
-            height: 38px;
-
             padding: 0;
-
             align-items: center;
             justify-content: center;
-
-            background-color: var(--red);
-
+            background: var(--red);
             font-size: 28px;
-            font-weight: normal;
-
-            line-height: 1;
         }
 
         #closeButton:hover {
-            background-color: var(--red-hover);
+            background: var(--red-dark);
         }
 
         #fileInput {
@@ -171,51 +123,38 @@
 
         main {
             height: calc(100vh - 60px);
-
             padding: 18px;
         }
 
         #dropzone {
             width: 100%;
             height: 100%;
-
             position: relative;
-
             display: flex;
-
             align-items: center;
             justify-content: center;
-
             border: 4px dashed var(--border);
             border-radius: 14px;
-
-            background-color: white;
-
+            background: white;
             overflow: auto;
-
             transition: 0.2s;
         }
 
         #dropzone.dragover {
             border-color: var(--blue);
-
-            background-color: #eff6ff;
+            background: #eff6ff;
         }
 
         #dropzone.pdfLoaded {
             align-items: flex-start;
-
             border: 1px solid #cbd5e1;
         }
 
         #message {
             padding: 30px;
-
             color: #64748b;
-
             font-size: 22px;
             line-height: 1.6;
-
             text-align: center;
         }
 
@@ -225,60 +164,41 @@
 
         #pdfCanvas {
             display: none;
-
-            background-color: white;
-
-            box-shadow:
-                0 2px 16px
-                rgba(0, 0, 0, 0.18);
+            background: white;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.18);
         }
 
         #status {
             display: none;
-
             position: fixed;
-
             top: 78px;
             left: 50%;
-
             transform: translateX(-50%);
-
             z-index: 100;
-
-            max-width: 700px;
-
+            max-width: 760px;
             padding: 10px 16px;
-
             border-radius: 7px;
-
-            background-color:
-                rgba(15, 23, 42, 0.95);
-
+            background: rgba(15, 23, 42, 0.95);
             color: white;
-
             font-size: 14px;
-
             text-align: center;
         }
 
         #status.success {
-            background-color: #1e40af;
+            background: #1e40af;
         }
 
         #status.notice {
-            background-color: #475569;
+            background: #475569;
         }
 
         #status.error {
-            background-color: #b91c1c;
+            background: #b91c1c;
         }
 
         @media (max-width: 850px) {
             header {
-                grid-template-columns:
-                    auto
-                    1fr
-                    auto;
+                grid-template-columns: auto 1fr auto;
             }
 
             #planName {
@@ -298,1374 +218,276 @@
 
 <body>
 
-    <header>
+<header>
+    <h1>Plantester</h1>
 
-        <h1>Plantester</h1>
+    <div id="planName"></div>
 
-        <div
-            id="planName"
-            title=""
-        ></div>
+    <div id="actions">
+        <button id="testButton" type="button">
+            <span id="testIcon">✓</span>
+            <span id="testButtonText">Plantester</span>
+        </button>
 
-        <div id="actions">
+        <button id="chooseButton" type="button">
+            PDF auswählen
+        </button>
 
-            <button
-                id="testButton"
-                type="button"
-                title="Planname prüfen"
-            >
-                <span id="testIcon">✓</span>
+        <button id="closeButton" type="button" title="PDF schliessen">
+            ×
+        </button>
 
-                <span id="testButtonText">
-                    Plantester
-                </span>
-            </button>
+        <input
+            id="fileInput"
+            type="file"
+            accept="application/pdf,.pdf"
+        >
+    </div>
+</header>
 
-            <button
-                id="chooseButton"
-                type="button"
-            >
-                PDF auswählen
-            </button>
-
-            <button
-                id="closeButton"
-                type="button"
-                title="PDF schliessen"
-                aria-label="PDF schliessen"
-            >
-                ×
-            </button>
-
-            <input
-                id="fileInput"
-                type="file"
-                accept="application/pdf,.pdf"
-            >
-
+<main>
+    <div id="dropzone">
+        <div id="message">
+            <strong>PDF-Plan hier hineinziehen</strong>
+            <br>
+            oder oben auf „PDF auswählen“ klicken
         </div>
 
-    </header>
+        <canvas id="pdfCanvas"></canvas>
+    </div>
+</main>
 
-    <main>
+<div id="status"></div>
 
-        <div id="dropzone">
+<script type="module">
 
-            <div id="message">
+    import * as pdfjsLib from
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
 
-                <strong>
-                    PDF-Plan hier hineinziehen
-                </strong>
-
-                <br>
-
-                oder oben auf „PDF auswählen“ klicken
-
-            </div>
-
-            <canvas id="pdfCanvas"></canvas>
-
-        </div>
-
-    </main>
-
-    <div id="status"></div>
-
-    <script type="module">
-
-        import * as pdfjsLib from
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
-
-        pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
 
 
-        const dropzone =
-            document.getElementById("dropzone");
+    const dropzone =
+        document.getElementById("dropzone");
 
-        const message =
-            document.getElementById("message");
+    const message =
+        document.getElementById("message");
 
-        const canvas =
-            document.getElementById("pdfCanvas");
+    const canvas =
+        document.getElementById("pdfCanvas");
 
-        const context =
-            canvas.getContext("2d");
+    const context =
+        canvas.getContext("2d");
 
-        const chooseButton =
-            document.getElementById("chooseButton");
+    const chooseButton =
+        document.getElementById("chooseButton");
 
-        const testButton =
-            document.getElementById("testButton");
+    const testButton =
+        document.getElementById("testButton");
 
-        const closeButton =
-            document.getElementById("closeButton");
+    const closeButton =
+        document.getElementById("closeButton");
 
-        const fileInput =
-            document.getElementById("fileInput");
+    const fileInput =
+        document.getElementById("fileInput");
 
-        const planName =
-            document.getElementById("planName");
+    const planName =
+        document.getElementById("planName");
 
-        const status =
-            document.getElementById("status");
-
-
-        let pdfDocument = null;
-
-        let firstPage = null;
-
-        let baseViewport = null;
-
-        let statusTimer = null;
+    const status =
+        document.getElementById("status");
 
 
-        chooseButton.addEventListener(
-            "click",
-            function () {
-                fileInput.click();
-            }
+    let firstPage = null;
+    let baseViewport = null;
+    let statusTimer = null;
+
+    const REQUIRED_POINTS = 6;
+
+
+    chooseButton.addEventListener("click", function () {
+        fileInput.click();
+    });
+
+
+    fileInput.addEventListener("change", function () {
+        if (fileInput.files[0]) {
+            loadPdf(fileInput.files[0]);
+        }
+    });
+
+
+    closeButton.addEventListener("click", resetViewer);
+
+    testButton.addEventListener("click", analysePlan);
+
+
+    dropzone.addEventListener("dragenter", activateDropzone);
+    dropzone.addEventListener("dragover", activateDropzone);
+
+
+    dropzone.addEventListener("dragleave", function (event) {
+        event.preventDefault();
+        dropzone.classList.remove("dragover");
+    });
+
+
+    dropzone.addEventListener("drop", function (event) {
+        event.preventDefault();
+
+        dropzone.classList.remove("dragover");
+
+        const file =
+            event.dataTransfer.files[0];
+
+        if (file) {
+            loadPdf(file);
+        }
+    });
+
+
+    function activateDropzone(event) {
+        event.preventDefault();
+        dropzone.classList.add("dragover");
+    }
+
+
+    function showStatus(text, type = "") {
+        clearTimeout(statusTimer);
+
+        status.textContent = text;
+        status.className = type;
+        status.style.display = "block";
+    }
+
+
+    function hideStatus() {
+        clearTimeout(statusTimer);
+
+        status.style.display = "none";
+        status.className = "";
+    }
+
+
+    function hideStatusLater() {
+        clearTimeout(statusTimer);
+
+        statusTimer =
+            setTimeout(hideStatus, 3500);
+    }
+
+
+    function getDatePrefix() {
+        const now = new Date();
+
+        return (
+            now.getFullYear() +
+            String(now.getMonth() + 1).padStart(2, "0") +
+            String(now.getDate()).padStart(2, "0")
         );
+    }
 
 
-        fileInput.addEventListener(
-            "change",
-            function () {
-                if (fileInput.files.length > 0) {
-                    loadPdf(
-                        fileInput.files[0]
-                    );
-                }
-            }
-        );
+    function cleanText(text) {
+        return String(text || "")
+            .replace(/\s+/g, " ")
+            .replace(/^[|,;:._\-]+/, "")
+            .replace(/[|,;:._\-]+$/, "")
+            .trim();
+    }
 
 
-        closeButton.addEventListener(
-            "click",
-            resetViewer
-        );
+    function cleanNamePart(text) {
+        return cleanText(text)
+            .replace(/[\\/:*?"<>|]/g, "")
+            .replace(/\s*-\s*/g, "-")
+            .replace(/_+/g, "_")
+            .trim();
+    }
 
 
-        testButton.addEventListener(
-            "click",
-            detectPlanName
-        );
+    async function loadPdf(file) {
 
+        const isPdf =
+            file.type === "application/pdf" ||
+            file.name.toLowerCase().endsWith(".pdf");
 
-        dropzone.addEventListener(
-            "dragenter",
-            handleDragOver
-        );
-
-
-        dropzone.addEventListener(
-            "dragover",
-            handleDragOver
-        );
-
-
-        dropzone.addEventListener(
-            "dragleave",
-            function (event) {
-                event.preventDefault();
-
-                dropzone.classList.remove(
-                    "dragover"
-                );
-            }
-        );
-
-
-        dropzone.addEventListener(
-            "drop",
-            function (event) {
-                event.preventDefault();
-
-                dropzone.classList.remove(
-                    "dragover"
-                );
-
-                const file =
-                    event.dataTransfer.files[0];
-
-                if (file) {
-                    loadPdf(file);
-                }
-            }
-        );
-
-
-        function handleDragOver(event) {
-            event.preventDefault();
-
-            dropzone.classList.add(
-                "dragover"
-            );
-        }
-
-
-        function showStatus(
-            text,
-            type = ""
-        ) {
-            clearTimeout(statusTimer);
-
-            status.textContent = text;
-
-            status.className = type;
-
-            status.style.display =
-                "block";
-        }
-
-
-        function hideStatus() {
-            clearTimeout(statusTimer);
-
-            status.style.display =
-                "none";
-
-            status.className = "";
-        }
-
-
-        function hideStatusLater() {
-            clearTimeout(statusTimer);
-
-            statusTimer = setTimeout(
-                hideStatus,
-                2500
-            );
-        }
-
-
-        function getDatePrefix() {
-            const now =
-                new Date();
-
-            const year =
-                now.getFullYear();
-
-            const month =
-                String(
-                    now.getMonth() + 1
-                ).padStart(
-                    2,
-                    "0"
-                );
-
-            const day =
-                String(
-                    now.getDate()
-                ).padStart(
-                    2,
-                    "0"
-                );
-
-            return (
-                year +
-                month +
-                day
-            );
-        }
-
-
-        function createSafeNamePart(text) {
-            return cleanText(text)
-                .replace(
-                    /[\\/:*?"<>|]/g,
-                    ""
-                )
-                .replace(
-                    /\s*-\s*/g,
-                    "-"
-                )
-                .replace(
-                    /_+/g,
-                    "_"
-                )
-                .trim();
-        }
-
-
-        function buildPlanName(
-            smallTitle,
-            mainTitle
-        ) {
-            return (
-                getDatePrefix() +
-                "_" +
-                createSafeNamePart(
-                    smallTitle
-                ) +
-                "_" +
-                createSafeNamePart(
-                    mainTitle
-                )
-            );
-        }
-
-
-        function buildImagePlanName() {
-            return (
-                getDatePrefix() +
-                "_Bildplan"
-            );
-        }
-
-
-        async function loadPdf(file) {
-
-            const isPdf =
-                file.type ===
-                "application/pdf" ||
-                file.name
-                    .toLowerCase()
-                    .endsWith(".pdf");
-
-            if (!isPdf) {
-                showStatus(
-                    "Bitte eine PDF-Datei auswählen.",
-                    "error"
-                );
-
-                hideStatusLater();
-
-                return;
-            }
-
-
-            try {
-                showStatus(
-                    "PDF wird geladen ..."
-                );
-
-
-                const buffer =
-                    await file.arrayBuffer();
-
-
-                pdfDocument =
-                    await pdfjsLib
-                        .getDocument({
-                            data:
-                                new Uint8Array(
-                                    buffer
-                                )
-                        })
-                        .promise;
-
-
-                firstPage =
-                    await pdfDocument.getPage(1);
-
-
-                baseViewport =
-                    firstPage.getViewport({
-                        scale: 1
-                    });
-
-
-                const availableWidth =
-                    Math.max(
-                        500,
-                        dropzone.clientWidth - 30
-                    );
-
-
-                const availableHeight =
-                    Math.max(
-                        400,
-                        dropzone.clientHeight - 30
-                    );
-
-
-                const fitScale =
-                    Math.min(
-                        availableWidth /
-                        baseViewport.width,
-
-                        availableHeight /
-                        baseViewport.height
-                    );
-
-
-                const pixelRatio =
-                    Math.max(
-                        1,
-                        window.devicePixelRatio
-                    );
-
-
-                const renderViewport =
-                    firstPage.getViewport({
-                        scale:
-                            fitScale *
-                            pixelRatio
-                    });
-
-
-                canvas.width =
-                    Math.floor(
-                        renderViewport.width
-                    );
-
-
-                canvas.height =
-                    Math.floor(
-                        renderViewport.height
-                    );
-
-
-                canvas.style.width =
-                    Math.floor(
-                        renderViewport.width /
-                        pixelRatio
-                    ) + "px";
-
-
-                canvas.style.height =
-                    Math.floor(
-                        renderViewport.height /
-                        pixelRatio
-                    ) + "px";
-
-
-                context.clearRect(
-                    0,
-                    0,
-                    canvas.width,
-                    canvas.height
-                );
-
-
-                await firstPage.render({
-                    canvasContext:
-                        context,
-
-                    viewport:
-                        renderViewport
-                }).promise;
-
-
-                message.style.display =
-                    "none";
-
-
-                canvas.style.display =
-                    "block";
-
-
-                dropzone.classList.add(
-                    "pdfLoaded"
-                );
-
-
-                chooseButton.style.display =
-                    "none";
-
-
-                testButton.style.display =
-                    "flex";
-
-
-                closeButton.style.display =
-                    "flex";
-
-
-                planName.textContent =
-                    "";
-
-
-                planName.title =
-                    "";
-
-
-                hideStatus();
-
-            } catch (error) {
-                console.error(error);
-
-                showStatus(
-                    "Die PDF konnte nicht geöffnet werden.",
-                    "error"
-                );
-
-                hideStatusLater();
-            }
-        }
-
-
-        async function detectPlanName() {
-
-            if (
-                !firstPage ||
-                !baseViewport
-            ) {
-                return;
-            }
-
-
-            testButton.disabled =
-                true;
-
-
-            planName.textContent =
-                "";
-
-
-            planName.title =
-                "";
-
-
-            try {
-                showStatus(
-                    "Plankopf wird gesucht ..."
-                );
-
-
-                const textContent =
-                    await firstPage
-                        .getTextContent();
-
-
-                /*
-                    Wenn gar kein eingebetteter Text
-                    enthalten ist, wird die PDF direkt
-                    als Bildplan bezeichnet.
-                */
-
-                if (
-                    !textContent.items ||
-                    textContent.items.length === 0
-                ) {
-                    showImagePlanResult(
-                        "Kein eingebetteter PDF-Text vorhanden."
-                    );
-
-                    return;
-                }
-
-
-                const items =
-                    createTextItems(
-                        textContent.items
-                    );
-
-
-                if (
-                    items.length === 0
-                ) {
-                    showImagePlanResult(
-                        "Kein auswertbarer PDF-Text vorhanden."
-                    );
-
-                    return;
-                }
-
-
-                const lines =
-                    groupIntoLines(
-                        items
-                    );
-
-
-                /*
-                    Erster und wichtigster Schritt:
-
-                    Eine typische Titelkombination
-                    im unteren rechten Teil des Plans
-                    suchen.
-
-                    Gesucht wird:
-
-                    kleine Bezeichnung
-                    direkt über
-                    grösserem Haupttitel
-                */
-
-                const titleBlockResult =
-                    findTitleBlock(
-                        lines,
-                        textContent.styles || {}
-                    );
-
-
-                if (titleBlockResult) {
-
-                    const finalTitle =
-                        buildPlanName(
-                            titleBlockResult
-                                .smallTitle
-                                .text,
-
-                            titleBlockResult
-                                .mainTitle
-                                .text
-                        );
-
-
-                    planName.textContent =
-                        finalTitle;
-
-
-                    planName.title =
-                        titleBlockResult
-                            .debugText;
-
-
-                    showStatus(
-                        "Plankopf erkannt",
-                        "success"
-                    );
-
-
-                    hideStatusLater();
-
-                    return;
-                }
-
-
-                /*
-                    Keine verlässliche
-                    Plankopfstruktur gefunden.
-
-                    Es wird bewusst kein zufälliger
-                    Text aus der Zeichnung verwendet.
-                */
-
-                showImagePlanResult(
-                    "Kein verlässlicher Plankopf erkannt."
-                );
-
-            } catch (error) {
-                console.error(error);
-
-
-                /*
-                    Auch bei einem Auswertungsfehler
-                    wird kein zufälliger Text verwendet.
-                */
-
-                showImagePlanResult(
-                    "PDF wird als Bildplan behandelt."
-                );
-
-            } finally {
-                testButton.disabled =
-                    false;
-            }
-        }
-
-
-        function showImagePlanResult(
-            reason
-        ) {
-            const imagePlanName =
-                buildImagePlanName();
-
-
-            planName.textContent =
-                imagePlanName;
-
-
-            planName.title =
-                reason;
-
-
+        if (!isPdf) {
             showStatus(
-                "Kein Plankopf erkannt - Bildplan",
-                "notice"
+                "Bitte eine PDF-Datei auswählen.",
+                "error"
             );
-
 
             hideStatusLater();
+            return;
         }
 
-
-        function createTextItems(
-            rawItems
-        ) {
-            const result = [];
-
-
-            for (
-                const rawItem
-                of rawItems
-            ) {
-                const text =
-                    cleanText(
-                        rawItem.str
-                    );
-
-
-                if (
-                    !text ||
-                    text.length < 2
-                ) {
-                    continue;
-                }
-
-
-                const transformed =
-                    pdfjsLib.Util
-                        .transform(
-                            baseViewport.transform,
-                            rawItem.transform
-                        );
-
-
-                const sizeFromMatrix =
-                    Math.sqrt(
-                        rawItem.transform[2] ** 2 +
-                        rawItem.transform[3] ** 2
-                    );
-
-
-                result.push({
-                    text: text,
-
-                    x:
-                        transformed[4],
-
-                    y:
-                        transformed[5],
-
-                    width:
-                        Number(
-                            rawItem.width
-                        ) || 0,
-
-                    fontSize:
-                        Math.max(
-                            Number(
-                                rawItem.height
-                            ) || 0,
-
-                            sizeFromMatrix || 0
-                        ),
-
-                    fontName:
-                        rawItem.fontName || ""
-                });
-            }
-
-
-            return result;
-        }
-
-
-        function groupIntoLines(
-            items
-        ) {
-            const sorted =
-                [...items].sort(
-                    function (a, b) {
-
-                        const tolerance =
-                            Math.max(
-                                a.fontSize,
-                                b.fontSize,
-                                5
-                            ) * 0.45;
-
-
-                        if (
-                            Math.abs(
-                                a.y - b.y
-                            ) <= tolerance
-                        ) {
-                            return (
-                                a.x -
-                                b.x
-                            );
-                        }
-
-
-                        return (
-                            a.y -
-                            b.y
-                        );
-                    }
-                );
-
-
-            const rows = [];
-
-
-            for (
-                const item
-                of sorted
-            ) {
-                let matchingRow =
-                    null;
-
-
-                for (
-                    const row
-                    of rows
-                ) {
-                    const tolerance =
-                        Math.max(
-                            row.fontSize,
-                            item.fontSize,
-                            5
-                        ) * 0.5;
-
-
-                    if (
-                        Math.abs(
-                            row.y -
-                            item.y
-                        ) <= tolerance
-                    ) {
-                        matchingRow =
-                            row;
-
-                        break;
-                    }
-                }
-
-
-                if (matchingRow) {
-                    matchingRow
-                        .items
-                        .push(item);
-
-
-                    matchingRow.fontSize =
-                        Math.max(
-                            matchingRow.fontSize,
-                            item.fontSize
-                        );
-
-
-                    matchingRow.x =
-                        Math.min(
-                            matchingRow.x,
-                            item.x
-                        );
-
-                } else {
-                    rows.push({
-                        y:
-                            item.y,
-
-                        x:
-                            item.x,
-
-                        fontSize:
-                            item.fontSize,
-
-                        items:
-                            [item]
-                    });
-                }
-            }
-
-
-            return rows
-                .map(
-                    function (row) {
-
-                        row.items.sort(
-                            function (a, b) {
-                                return (
-                                    a.x -
-                                    b.x
-                                );
-                            }
-                        );
-
-
-                        const largestItem =
-                            [...row.items]
-                                .sort(
-                                    function (a, b) {
-                                        return (
-                                            b.fontSize -
-                                            a.fontSize
-                                        );
-                                    }
-                                )[0];
-
-
-                        return {
-                            text:
-                                cleanText(
-                                    row.items
-                                        .map(
-                                            function (
-                                                item
-                                            ) {
-                                                return (
-                                                    item.text
-                                                );
-                                            }
-                                        )
-                                        .join(" ")
-                                ),
-
-                            x:
-                                row.x,
-
-                            y:
-                                row.y,
-
-                            fontSize:
-                                row.fontSize,
-
-                            fontName:
-                                largestItem
-                                    .fontName
-                        };
-                    }
-                )
-                .filter(
-                    function (line) {
-                        return (
-                            line.text.length >=
-                            3
-                        );
-                    }
-                );
-        }
-
-
-        function findTitleBlock(
-            lines,
-            styles
-        ) {
-            const pairs = [];
-
-
-            /*
-                Nur die untere Hälfte des Plans
-                wird als möglicher Plankopfbereich
-                berücksichtigt.
-            */
-
-            const lowerPageLines =
-                lines.filter(
-                    function (line) {
-                        return (
-                            line.y >=
-                            baseViewport.height *
-                            0.50
-                        );
-                    }
-                );
-
-
-            for (
-                const possibleSmallTitle
-                of lowerPageLines
-            ) {
-                if (
-                    !isSmallTitle(
-                        possibleSmallTitle
-                            .text
-                    )
-                ) {
-                    continue;
-                }
-
-
-                for (
-                    const possibleMainTitle
-                    of lowerPageLines
-                ) {
-                    if (
-                        possibleMainTitle ===
-                        possibleSmallTitle
-                    ) {
-                        continue;
-                    }
-
-
-                    const isBelow =
-                        possibleMainTitle.y >
-                        possibleSmallTitle.y;
-
-
-                    const verticalDistance =
-                        possibleMainTitle.y -
-                        possibleSmallTitle.y;
-
-
-                    const leftDifference =
-                        Math.abs(
-                            possibleMainTitle.x -
-                            possibleSmallTitle.x
-                        );
-
-
-                    const largerFont =
-                        possibleMainTitle
-                            .fontSize >
-                        possibleSmallTitle
-                            .fontSize *
-                        1.05;
-
-
-                    const closeVertically =
-                        verticalDistance <=
-                        Math.max(
-                            possibleMainTitle
-                                .fontSize *
-                            4.5,
-
-                            30
-                        );
-
-
-                    const sameLeftEdge =
-                        leftDifference <=
-                        Math.max(
-                            possibleMainTitle
-                                .fontSize *
-                            4,
-
-                            45
-                        );
-
-
-                    if (
-                        !isBelow ||
-                        !largerFont ||
-                        !closeVertically ||
-                        !sameLeftEdge
-                    ) {
-                        continue;
-                    }
-
-
-                    if (
-                        !isMainTitle(
-                            possibleMainTitle
-                                .text
-                        )
-                    ) {
-                        continue;
-                    }
-
-
-                    const verticalPagePosition =
-                        possibleMainTitle.y /
-                        baseViewport.height;
-
-
-                    const horizontalPagePosition =
-                        possibleMainTitle.x /
-                        baseViewport.width;
-
-
-                    /*
-                        Planköpfe liegen typischerweise
-                        unten und eher rechts.
-
-                        Die Position ist aber nicht starr,
-                        damit unterschiedliche Planköpfe
-                        erkannt werden.
-                    */
-
-                    let positionScore =
-                        verticalPagePosition *
-                        500;
-
-
-                    if (
-                        horizontalPagePosition >=
-                        0.45
-                    ) {
-                        positionScore +=
-                            220;
-                    }
-
-
-                    if (
-                        horizontalPagePosition >=
-                        0.65
-                    ) {
-                        positionScore +=
-                            80;
-                    }
-
-
-                    const boldBonus =
-                        looksBold(
-                            possibleMainTitle,
-                            styles
-                        )
-                            ? 300
-                            : 0;
-
-
-                    const knownLabelBonus =
-                        isKnownSmallTitle(
-                            possibleSmallTitle
-                                .text
-                        )
-                            ? 600
-                            : 0;
-
-
-                    const score =
-                        possibleMainTitle
-                            .fontSize *
-                        100 +
-
-                        positionScore +
-
-                        boldBonus +
-
-                        knownLabelBonus -
-
-                        verticalDistance *
-                        2 -
-
-                        leftDifference;
-
-
-                    pairs.push({
-                        smallTitle:
-                            possibleSmallTitle,
-
-                        mainTitle:
-                            possibleMainTitle,
-
-                        score:
-                            score
-                    });
-                }
-            }
-
-
-            if (
-                pairs.length === 0
-            ) {
-                return null;
-            }
-
-
-            pairs.sort(
-                function (a, b) {
-                    return (
-                        b.score -
-                        a.score
-                    );
-                }
-            );
-
-
-            const bestPair =
-                pairs[0];
-
-
-            /*
-                Mindestwert verhindert,
-                dass irgendein zufälliges
-                Textpaar als Plankopf gilt.
-            */
-
-            if (
-                bestPair.score <
-                1000
-            ) {
-                return null;
-            }
-
-
-            const debugText =
-                "Kleine Bezeichnung: " +
-                bestPair.smallTitle.text +
-                "\n" +
-                "Schriftgrösse: " +
-                bestPair.smallTitle
-                    .fontSize
-                    .toFixed(1) +
-                "\n\n" +
-                "Hauptbezeichnung: " +
-                bestPair.mainTitle.text +
-                "\n" +
-                "Schriftgrösse: " +
-                bestPair.mainTitle
-                    .fontSize
-                    .toFixed(1);
-
-
-            return {
-                smallTitle:
-                    bestPair.smallTitle,
-
-                mainTitle:
-                    bestPair.mainTitle,
-
-                debugText:
-                    debugText
-            };
-        }
-
-
-        function isKnownSmallTitle(
-            text
-        ) {
-            return (
-                /^(detail|grundriss|schnitt|ansicht|fassade|übersicht|ausführung|bestand|abbruch|neubau)$/i
-                    .test(text) ||
-
-                /\b1\s*:\s*\d+\b/i
-                    .test(text) ||
-
-                /skaliert|bauetappe|mieterplan/i
-                    .test(text)
-            );
-        }
-
-
-        function isSmallTitle(
-            text
-        ) {
-            if (
-                containsForbiddenText(
-                    text
-                )
-            ) {
-                return false;
-            }
-
-
-            if (
-                isKnownSmallTitle(
-                    text
-                )
-            ) {
-                return true;
-            }
-
-
-            return false;
-        }
-
-
-        function isMainTitle(
-            text
-        ) {
-            if (
-                containsForbiddenText(
-                    text
-                )
-            ) {
-                return false;
-            }
-
-
-            if (
-                text.length < 4 ||
-                text.length > 85
-            ) {
-                return false;
-            }
-
-
-            if (
-                /^(bestand vor ort|legende|planrevision|material|bauherrschaft|architekt|bauingenieur|elektroplaner|brandschutzplaner|hlks-planer|logistikplaner)$/i
-                    .test(text)
-            ) {
-                return false;
-            }
-
-
-            return true;
-        }
-
-
-        function containsForbiddenText(
-            text
-        ) {
-            return (
-                /\bm\s*ü\.?\s*m\.?\b/i
-                    .test(text) ||
-
-                /parz\.?\s*nr|bauvorhaben|bahnhofplatz|telefon|@|www\.|datum|revision|plannummer|plan nr|massstab|maßstab|projekt nr|projektnummer/i
-                    .test(text) ||
-
-                /räschle|helvetia|weber partner|weberpart|logistik/i
-                    .test(text)
-            );
-        }
-
-
-        function looksBold(
-            line,
-            styles
-        ) {
-            const style =
-                styles[
-                    line.fontName
-                ] || {};
-
-
-            const description =
-                (
-                    line.fontName +
-                    " " +
-                    String(
-                        style.fontFamily ||
-                        ""
-                    )
-                ).toLowerCase();
-
-
-            return (
-                /bold|black|heavy|demi|semibold/
-                    .test(description)
-            );
-        }
-
-
-        function cleanText(text) {
-
-            if (!text) {
-                return "";
-            }
-
-
-            return text
-                .replace(
-                    /\s+/g,
-                    " "
-                )
-                .replace(
-                    /^[|,;:._\-]+/,
-                    ""
-                )
-                .replace(
-                    /[|,;:._\-]+$/,
-                    ""
-                )
-                .trim();
-        }
-
-
-        function resetViewer() {
-
-            clearTimeout(
-                statusTimer
-            );
-
-
-            pdfDocument =
-                null;
-
+        try {
+            showStatus("PDF wird geladen ...");
+
+            const buffer =
+                await file.arrayBuffer();
+
+            const pdfDocument =
+                await pdfjsLib
+                    .getDocument({
+                        data: new Uint8Array(buffer)
+                    })
+                    .promise;
 
             firstPage =
-                null;
-
+                await pdfDocument.getPage(1);
 
             baseViewport =
-                null;
+                firstPage.getViewport({
+                    scale: 1
+                });
 
+            const availableWidth =
+                Math.max(
+                    500,
+                    dropzone.clientWidth - 30
+                );
+
+            const availableHeight =
+                Math.max(
+                    400,
+                    dropzone.clientHeight - 30
+                );
+
+            const fitScale =
+                Math.min(
+                    availableWidth / baseViewport.width,
+                    availableHeight / baseViewport.height
+                );
+
+            const pixelRatio =
+                Math.max(
+                    1,
+                    window.devicePixelRatio
+                );
+
+            const renderViewport =
+                firstPage.getViewport({
+                    scale: fitScale * pixelRatio
+                });
+
+            canvas.width =
+                Math.floor(renderViewport.width);
+
+            canvas.height =
+                Math.floor(renderViewport.height);
+
+            canvas.style.width =
+                Math.floor(
+                    renderViewport.width / pixelRatio
+                ) + "px";
+
+            canvas.style.height =
+                Math.floor(
+                    renderViewport.height / pixelRatio
+                ) + "px";
 
             context.clearRect(
                 0,
@@ -1674,65 +496,735 @@
                 canvas.height
             );
 
+            await firstPage.render({
+                canvasContext: context,
+                viewport: renderViewport
+            }).promise;
 
-            canvas.width =
-                0;
+            message.style.display = "none";
+            canvas.style.display = "block";
 
+            dropzone.classList.add("pdfLoaded");
 
-            canvas.height =
-                0;
+            chooseButton.style.display = "none";
+            testButton.style.display = "flex";
+            closeButton.style.display = "flex";
 
-
-            canvas.style.display =
-                "none";
-
-
-            message.style.display =
-                "block";
-
-
-            dropzone.classList.remove(
-                "pdfLoaded"
-            );
-
-
-            dropzone.classList.remove(
-                "dragover"
-            );
-
-
-            chooseButton.style.display =
-                "block";
-
-
-            testButton.style.display =
-                "none";
-
-
-            testButton.disabled =
-                false;
-
-
-            closeButton.style.display =
-                "none";
-
-
-            planName.textContent =
-                "";
-
-
-            planName.title =
-                "";
-
-
-            fileInput.value =
-                "";
-
+            planName.textContent = "";
+            planName.title = "";
 
             hideStatus();
+
+        } catch (error) {
+            console.error(error);
+
+            showStatus(
+                "Die PDF konnte nicht geöffnet werden.",
+                "error"
+            );
+
+            hideStatusLater();
+        }
+    }
+
+
+    async function analysePlan() {
+
+        if (!firstPage || !baseViewport) {
+            return;
         }
 
-    </script>
+        testButton.disabled = true;
+
+        planName.textContent = "";
+        planName.title = "";
+
+        try {
+            showStatus(
+                "Plankopf wird mit 10 Kriterien geprüft ..."
+            );
+
+            const textContent =
+                await firstPage.getTextContent();
+
+            if (
+                !textContent.items ||
+                textContent.items.length === 0
+            ) {
+                showImagePlan(
+                    "Kein eingebetteter PDF-Text"
+                );
+
+                return;
+            }
+
+            const items =
+                createTextItems(
+                    textContent.items
+                );
+
+            const lines =
+                groupIntoLines(items);
+
+            const result =
+                evaluateTitlePairs(
+                    lines,
+                    textContent.styles || {}
+                );
+
+            if (
+                !result ||
+                result.points < REQUIRED_POINTS
+            ) {
+                const points =
+                    result ? result.points : 0;
+
+                showImagePlan(
+                    points +
+                    " von 10 Kriterien erfüllt"
+                );
+
+                return;
+            }
+
+            const finalName =
+                getDatePrefix() +
+                "_" +
+                cleanNamePart(
+                    result.smallTitle.text
+                ) +
+                "_" +
+                cleanNamePart(
+                    result.mainTitle.text
+                );
+
+            planName.textContent =
+                finalName;
+
+            planName.title =
+                createChecklistText(result);
+
+            showStatus(
+                "Plankopf erkannt - " +
+                result.points +
+                " von 10 Kriterien",
+                "success"
+            );
+
+            hideStatusLater();
+
+        } catch (error) {
+            console.error(error);
+
+            showImagePlan(
+                "Plankopfprüfung nicht möglich"
+            );
+
+        } finally {
+            testButton.disabled = false;
+        }
+    }
+
+
+    function createTextItems(rawItems) {
+
+        const result = [];
+
+        for (const rawItem of rawItems) {
+
+            const text =
+                cleanText(rawItem.str);
+
+            if (!text || text.length < 2) {
+                continue;
+            }
+
+            const transformed =
+                pdfjsLib.Util.transform(
+                    baseViewport.transform,
+                    rawItem.transform
+                );
+
+            const matrixSize =
+                Math.sqrt(
+                    rawItem.transform[2] ** 2 +
+                    rawItem.transform[3] ** 2
+                );
+
+            result.push({
+                text: text,
+                x: transformed[4],
+                y: transformed[5],
+                fontSize:
+                    Math.max(
+                        Number(rawItem.height) || 0,
+                        matrixSize || 0
+                    ),
+                fontName:
+                    rawItem.fontName || ""
+            });
+        }
+
+        return result;
+    }
+
+
+    function groupIntoLines(items) {
+
+        const sorted =
+            [...items].sort(function (a, b) {
+
+                const tolerance =
+                    Math.max(
+                        a.fontSize,
+                        b.fontSize,
+                        5
+                    ) * 0.45;
+
+                if (
+                    Math.abs(a.y - b.y) <=
+                    tolerance
+                ) {
+                    return a.x - b.x;
+                }
+
+                return a.y - b.y;
+            });
+
+
+        const rows = [];
+
+
+        for (const item of sorted) {
+
+            let matchingRow = null;
+
+            for (const row of rows) {
+
+                const tolerance =
+                    Math.max(
+                        row.fontSize,
+                        item.fontSize,
+                        5
+                    ) * 0.5;
+
+                if (
+                    Math.abs(
+                        row.y - item.y
+                    ) <= tolerance
+                ) {
+                    matchingRow = row;
+                    break;
+                }
+            }
+
+
+            if (matchingRow) {
+
+                matchingRow.items.push(item);
+
+                matchingRow.fontSize =
+                    Math.max(
+                        matchingRow.fontSize,
+                        item.fontSize
+                    );
+
+                matchingRow.x =
+                    Math.min(
+                        matchingRow.x,
+                        item.x
+                    );
+
+            } else {
+
+                rows.push({
+                    x: item.x,
+                    y: item.y,
+                    fontSize: item.fontSize,
+                    items: [item]
+                });
+            }
+        }
+
+
+        return rows
+            .map(function (row) {
+
+                row.items.sort(
+                    function (a, b) {
+                        return a.x - b.x;
+                    }
+                );
+
+                const largestItem =
+                    [...row.items].sort(
+                        function (a, b) {
+                            return (
+                                b.fontSize -
+                                a.fontSize
+                            );
+                        }
+                    )[0];
+
+                return {
+                    text:
+                        cleanText(
+                            row.items
+                                .map(
+                                    function (item) {
+                                        return item.text;
+                                    }
+                                )
+                                .join(" ")
+                        ),
+
+                    x: row.x,
+                    y: row.y,
+                    fontSize: row.fontSize,
+                    fontName: largestItem.fontName
+                };
+            })
+            .filter(
+                function (line) {
+                    return line.text.length >= 3;
+                }
+            );
+    }
+
+
+    function evaluateTitlePairs(
+        lines,
+        styles
+    ) {
+
+        const lowerRightLines =
+            lines.filter(
+                function (line) {
+                    return (
+                        line.y >=
+                        baseViewport.height * 0.45 &&
+
+                        line.x >=
+                        baseViewport.width * 0.40
+                    );
+                }
+            );
+
+
+        /*
+            Typische Wörter im gesamten
+            unteren rechten Plankopfbereich.
+        */
+
+        const titleBlockText =
+            lowerRightLines
+                .map(
+                    function (line) {
+                        return line.text;
+                    }
+                )
+                .join(" ");
+
+
+        const candidates = [];
+
+
+        for (
+            const smallTitle
+            of lowerRightLines
+        ) {
+            for (
+                const mainTitle
+                of lowerRightLines
+            ) {
+
+                if (smallTitle === mainTitle) {
+                    continue;
+                }
+
+                const isBelow =
+                    mainTitle.y >
+                    smallTitle.y;
+
+                const verticalDistance =
+                    mainTitle.y -
+                    smallTitle.y;
+
+                const horizontalDistance =
+                    Math.abs(
+                        mainTitle.x -
+                        smallTitle.x
+                    );
+
+                if (
+                    !isBelow ||
+                    verticalDistance >
+                    Math.max(
+                        mainTitle.fontSize * 5,
+                        40
+                    )
+                ) {
+                    continue;
+                }
+
+
+                const checks = [];
+
+
+                /*
+                    1. Untere Planhälfte
+                */
+
+                checks.push({
+                    name:
+                        "Titel in unterer Planhälfte",
+
+                    passed:
+                        mainTitle.y >=
+                        baseViewport.height * 0.50
+                });
+
+
+                /*
+                    2. Rechte Planhälfte
+                */
+
+                checks.push({
+                    name:
+                        "Titel in rechter Planhälfte",
+
+                    passed:
+                        mainTitle.x >=
+                        baseViewport.width * 0.45
+                });
+
+
+                /*
+                    3. Typische kleine Titelzeile
+                */
+
+                checks.push({
+                    name:
+                        "Typische kleine Titelzeile",
+
+                    passed:
+                        isTypicalSmallTitle(
+                            smallTitle.text
+                        )
+                });
+
+
+                /*
+                    4. Haupttitel direkt darunter
+                */
+
+                checks.push({
+                    name:
+                        "Haupttitel direkt darunter",
+
+                    passed:
+                        verticalDistance <=
+                        Math.max(
+                            mainTitle.fontSize * 4,
+                            32
+                        )
+                });
+
+
+                /*
+                    5. Haupttitel ist grösser
+                */
+
+                checks.push({
+                    name:
+                        "Haupttitel grössere Schrift",
+
+                    passed:
+                        mainTitle.fontSize >
+                        smallTitle.fontSize * 1.05
+                });
+
+
+                /*
+                    6. Gleiche linke Ausrichtung
+                */
+
+                checks.push({
+                    name:
+                        "Titelzeilen gleich ausgerichtet",
+
+                    passed:
+                        horizontalDistance <=
+                        Math.max(
+                            mainTitle.fontSize * 4,
+                            45
+                        )
+                });
+
+
+                /*
+                    7. Plausible Haupttitellänge
+                */
+
+                checks.push({
+                    name:
+                        "Plausible Haupttitellänge",
+
+                    passed:
+                        mainTitle.text.length >= 4 &&
+                        mainTitle.text.length <= 85
+                });
+
+
+                /*
+                    8. Keine Metadaten
+                */
+
+                checks.push({
+                    name:
+                        "Keine Höhen- oder Metadaten",
+
+                    passed:
+                        !containsForbiddenText(
+                            mainTitle.text
+                        )
+                });
+
+
+                /*
+                    9. Typische Plankopfinhalte
+                */
+
+                checks.push({
+                    name:
+                        "Typische Plankopfinhalte vorhanden",
+
+                    passed:
+                        /planrevision|sanierung|bauvorhaben|massstab|maßstab|projekt|architekt|bauherr|gezeichnet|revision|index|plannummer/i
+                            .test(titleBlockText)
+                });
+
+
+                /*
+                    10. Fett oder deutlich grösser
+                */
+
+                checks.push({
+                    name:
+                        "Haupttitel hervorgehoben",
+
+                    passed:
+                        looksBold(
+                            mainTitle,
+                            styles
+                        ) ||
+
+                        mainTitle.fontSize >=
+                        smallTitle.fontSize * 1.35
+                });
+
+
+                const points =
+                    checks.filter(
+                        function (check) {
+                            return check.passed;
+                        }
+                    ).length;
+
+
+                candidates.push({
+                    smallTitle: smallTitle,
+                    mainTitle: mainTitle,
+                    checks: checks,
+                    points: points,
+
+                    ranking:
+                        points * 1000 +
+
+                        mainTitle.fontSize * 20 +
+
+                        (
+                            mainTitle.y /
+                            baseViewport.height
+                        ) * 200 +
+
+                        (
+                            mainTitle.x /
+                            baseViewport.width
+                        ) * 100 -
+
+                        verticalDistance -
+
+                        horizontalDistance
+                });
+            }
+        }
+
+
+        if (candidates.length === 0) {
+            return null;
+        }
+
+
+        candidates.sort(
+            function (a, b) {
+                return b.ranking - a.ranking;
+            }
+        );
+
+
+        return candidates[0];
+    }
+
+
+    function isTypicalSmallTitle(text) {
+
+        return (
+            /^(detail|grundriss|schnitt|ansicht|fassade|übersicht|ausführung|bestand|abbruch|neubau)$/i
+                .test(text) ||
+
+            /\b1\s*:\s*\d+\b/i
+                .test(text) ||
+
+            /skaliert|bauetappe|mieterplan/i
+                .test(text)
+        );
+    }
+
+
+    function containsForbiddenText(text) {
+
+        return (
+            /\bm\s*ü\.?\s*m\.?\b/i
+                .test(text) ||
+
+            /parz\.?\s*nr|bauvorhaben|bahnhofplatz|telefon|@|www\.|datum|revision|plannummer|plan nr|projekt nr|projektnummer/i
+                .test(text) ||
+
+            /räschle|helvetia|weber partner|weberpart|logistik/i
+                .test(text)
+        );
+    }
+
+
+    function looksBold(
+        line,
+        styles
+    ) {
+
+        const style =
+            styles[line.fontName] || {};
+
+        const description =
+            (
+                line.fontName +
+                " " +
+                String(
+                    style.fontFamily || ""
+                )
+            ).toLowerCase();
+
+        return (
+            /bold|black|heavy|demi|semibold/
+                .test(description)
+        );
+    }
+
+
+    function createChecklistText(result) {
+
+        return (
+            result.points +
+            " von 10 Kriterien erfüllt\n\n" +
+
+            result.checks
+                .map(
+                    function (check, index) {
+                        return (
+                            (index + 1) +
+                            ". " +
+                            (
+                                check.passed
+                                    ? "JA"
+                                    : "NEIN"
+                            ) +
+                            " - " +
+                            check.name
+                        );
+                    }
+                )
+                .join("\n") +
+
+            "\n\nKleine Bezeichnung: " +
+            result.smallTitle.text +
+
+            "\nHauptbezeichnung: " +
+            result.mainTitle.text
+        );
+    }
+
+
+    function showImagePlan(reason) {
+
+        const imageName =
+            getDatePrefix() +
+            "_Bildplan";
+
+        planName.textContent =
+            imageName;
+
+        planName.title =
+            reason;
+
+        showStatus(
+            "Kein sicherer Plankopf - " +
+            reason,
+            "notice"
+        );
+
+        hideStatusLater();
+    }
+
+
+    function resetViewer() {
+
+        clearTimeout(statusTimer);
+
+        firstPage = null;
+        baseViewport = null;
+
+        context.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        canvas.width = 0;
+        canvas.height = 0;
+        canvas.style.display = "none";
+
+        message.style.display = "block";
+
+        dropzone.classList.remove(
+            "pdfLoaded",
+            "dragover"
+        );
+
+        chooseButton.style.display = "block";
+        testButton.style.display = "none";
+        testButton.disabled = false;
+        closeButton.style.display = "none";
+
+        planName.textContent = "";
+        planName.title = "";
+
+        fileInput.value = "";
+
+        hideStatus();
+    }
+
+</script>
 
 </body>
 </html>
