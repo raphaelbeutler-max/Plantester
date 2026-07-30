@@ -12,13 +12,13 @@
 
     <style>
         :root {
-            --navy: #0f172a;
-            --royal-blue: #2563eb;
-            --royal-blue-dark: #1d4ed8;
-            --red: #dc2626;
-            --red-dark: #b91c1c;
-            --background: #f3f4f6;
-            --border: #94a3b8;
+            --dunkelblau: #0f172a;
+            --koenigsblau: #2563eb;
+            --koenigsblau-dunkel: #1d4ed8;
+            --rot: #dc2626;
+            --rot-dunkel: #b91c1c;
+            --hintergrund: #f3f4f6;
+            --rahmen: #94a3b8;
         }
 
         * {
@@ -31,7 +31,7 @@
 
             font-family: Arial, sans-serif;
 
-            background-color: var(--background);
+            background-color: var(--hintergrund);
 
             overflow: hidden;
         }
@@ -41,19 +41,19 @@
 
             padding: 0 16px 0 24px;
 
-            background-color: var(--navy);
-            color: white;
-
             display: grid;
 
             grid-template-columns:
                 minmax(180px, 1fr)
-                minmax(200px, 2fr)
-                minmax(180px, 1fr);
+                minmax(250px, 2fr)
+                minmax(250px, 1fr);
 
             align-items: center;
 
             gap: 15px;
+
+            background-color: var(--dunkelblau);
+            color: white;
         }
 
         header h1 {
@@ -105,12 +105,14 @@
             cursor: pointer;
         }
 
-        #chooseButton {
-            background-color: var(--royal-blue);
+        #chooseButton,
+        #testButton {
+            background-color: var(--koenigsblau);
         }
 
-        #chooseButton:hover {
-            background-color: var(--royal-blue-dark);
+        #chooseButton:hover,
+        #testButton:hover {
+            background-color: var(--koenigsblau-dunkel);
         }
 
         #testButton {
@@ -118,13 +120,7 @@
 
             align-items: center;
 
-            gap: 8px;
-
-            background-color: var(--royal-blue);
-        }
-
-        #testButton:hover {
-            background-color: var(--royal-blue-dark);
+            gap: 9px;
         }
 
         #testButton:disabled {
@@ -133,8 +129,8 @@
         }
 
         #testIcon {
-            width: 23px;
-            height: 23px;
+            width: 24px;
+            height: 24px;
 
             display: inline-flex;
 
@@ -144,7 +140,9 @@
             border: 2px solid white;
             border-radius: 50%;
 
-            font-size: 14px;
+            color: white;
+
+            font-size: 15px;
             font-weight: bold;
         }
 
@@ -159,7 +157,9 @@
             justify-content: center;
             align-items: center;
 
-            background-color: var(--red);
+            background-color: var(--rot);
+
+            color: white;
 
             font-size: 28px;
             font-weight: normal;
@@ -168,7 +168,7 @@
         }
 
         #closeButton:hover {
-            background-color: var(--red-dark);
+            background-color: var(--rot-dunkel);
         }
 
         #fileInput {
@@ -192,7 +192,7 @@
             justify-content: center;
             align-items: center;
 
-            border: 4px dashed var(--border);
+            border: 4px dashed var(--rahmen);
             border-radius: 14px;
 
             background-color: white;
@@ -205,17 +205,15 @@
         }
 
         #dropzone.dragover {
-            border-color: var(--royal-blue);
+            border-color: var(--koenigsblau);
 
             background-color: #eff6ff;
         }
 
         #dropzone.pdfLoaded {
-            border-style: solid;
-            border-width: 1px;
-            border-color: #cbd5e1;
-
             align-items: flex-start;
+
+            border: 1px solid #cbd5e1;
         }
 
         #message {
@@ -230,13 +228,11 @@
         }
 
         #message strong {
-            color: var(--navy);
+            color: var(--dunkelblau);
         }
 
         #pdfCanvas {
             display: none;
-
-            max-width: none;
 
             background-color: white;
 
@@ -255,16 +251,16 @@
 
             transform: translateX(-50%);
 
-            z-index: 10;
+            z-index: 100;
 
-            min-width: 240px;
+            min-width: 270px;
 
-            padding: 10px 16px;
+            padding: 11px 17px;
 
             border-radius: 7px;
 
             background-color:
-                rgba(15, 23, 42, 0.94);
+                rgba(15, 23, 42, 0.95);
 
             color: white;
 
@@ -275,7 +271,17 @@
             pointer-events: none;
         }
 
-        #ocrPreview {
+        #status.error {
+            background-color:
+                rgba(185, 28, 28, 0.96);
+        }
+
+        #status.success {
+            background-color:
+                rgba(30, 64, 175, 0.96);
+        }
+
+        #ocrCanvas {
             display: none;
         }
 
@@ -318,7 +324,7 @@
             <button
                 id="testButton"
                 type="button"
-                title="Plankopf unten rechts prüfen"
+                title="Planname im Plankopf prüfen"
             >
                 <span id="testIcon">✓</span>
 
@@ -377,9 +383,7 @@
 
     <div id="status"></div>
 
-    <canvas id="ocrPreview"></canvas>
-
-    https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.jsscript>
+    <canvas id="ocrCanvas"></canvas>
 
     <script type="module">
 
@@ -387,7 +391,7 @@
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
 
         pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
 
         const dropzone =
             document.getElementById("dropzone");
@@ -399,13 +403,23 @@
             document.getElementById("pdfCanvas");
 
         const pdfContext =
-            pdfCanvas.getContext("2d");
+            pdfCanvas.getContext(
+                "2d",
+                {
+                    willReadFrequently: true
+                }
+            );
 
-        const ocrPreview =
-            document.getElementById("ocrPreview");
+        const ocrCanvas =
+            document.getElementById("ocrCanvas");
 
         const ocrContext =
-            ocrPreview.getContext("2d");
+            ocrCanvas.getContext(
+                "2d",
+                {
+                    willReadFrequently: true
+                }
+            );
 
         const chooseButton =
             document.getElementById("chooseButton");
@@ -427,8 +441,8 @@
 
         let pdfDocument = null;
         let firstPage = null;
-        let pageViewport = null;
-        let currentFileName = "";
+        let renderedViewport = null;
+        let statusTimer = null;
 
         chooseButton.addEventListener(
             "click",
@@ -441,7 +455,9 @@
             "change",
             function () {
                 if (fileInput.files.length > 0) {
-                    loadPdf(fileInput.files[0]);
+                    loadPdf(
+                        fileInput.files[0]
+                    );
                 }
             }
         );
@@ -458,24 +474,12 @@
 
         dropzone.addEventListener(
             "dragenter",
-            function (event) {
-                event.preventDefault();
-
-                dropzone.classList.add(
-                    "dragover"
-                );
-            }
+            handleDragOver
         );
 
         dropzone.addEventListener(
             "dragover",
-            function (event) {
-                event.preventDefault();
-
-                dropzone.classList.add(
-                    "dragover"
-                );
-            }
+            handleDragOver
         );
 
         dropzone.addEventListener(
@@ -507,28 +511,64 @@
             }
         );
 
-        function showStatus(text) {
+        function handleDragOver(event) {
+            event.preventDefault();
+
+            dropzone.classList.add(
+                "dragover"
+            );
+        }
+
+        function showStatus(
+            text,
+            type = ""
+        ) {
+            clearTimeout(statusTimer);
+
             status.textContent = text;
 
-            status.style.display = "block";
+            status.className = type;
+
+            status.style.display =
+                "block";
         }
 
         function hideStatus() {
-            status.style.display = "none";
+            clearTimeout(statusTimer);
+
+            status.style.display =
+                "none";
+
+            status.className = "";
+        }
+
+        function hideStatusAfterDelay() {
+            clearTimeout(statusTimer);
+
+            statusTimer = setTimeout(
+                function () {
+                    hideStatus();
+                },
+                2500
+            );
         }
 
         async function loadPdf(file) {
 
             const isPdf =
-                file.type === "application/pdf" ||
+                file.type ===
+                "application/pdf" ||
                 file.name
                     .toLowerCase()
                     .endsWith(".pdf");
 
             if (!isPdf) {
-                alert(
-                    "Bitte eine PDF-Datei auswählen."
+                showStatus(
+                    "Bitte eine PDF-Datei auswählen.",
+                    "error"
                 );
+
+                hideStatusAfterDelay();
 
                 return;
             }
@@ -537,12 +577,6 @@
                 showStatus(
                     "PDF wird geladen ..."
                 );
-
-                currentFileName =
-                    file.name.replace(
-                        /\.pdf$/i,
-                        ""
-                    );
 
                 const fileBuffer =
                     await file.arrayBuffer();
@@ -588,52 +622,58 @@
                         originalViewport.height
                     );
 
-                const qualityMultiplier =
+                const screenScale =
                     Math.max(
-                        2,
+                        1,
                         window.devicePixelRatio
                     );
 
                 const renderScale =
                     Math.max(
                         2,
-                        fitScale *
-                        qualityMultiplier
+                        fitScale * screenScale
                     );
 
-                pageViewport =
+                renderedViewport =
                     firstPage.getViewport({
                         scale: renderScale
                     });
 
                 pdfCanvas.width =
                     Math.floor(
-                        pageViewport.width
+                        renderedViewport.width
                     );
 
                 pdfCanvas.height =
                     Math.floor(
-                        pageViewport.height
+                        renderedViewport.height
                     );
 
                 pdfCanvas.style.width =
                     Math.floor(
-                        pageViewport.width /
-                        qualityMultiplier
+                        renderedViewport.width /
+                        screenScale
                     ) + "px";
 
                 pdfCanvas.style.height =
                     Math.floor(
-                        pageViewport.height /
-                        qualityMultiplier
+                        renderedViewport.height /
+                        screenScale
                     ) + "px";
+
+                pdfContext.clearRect(
+                    0,
+                    0,
+                    pdfCanvas.width,
+                    pdfCanvas.height
+                );
 
                 await firstPage.render({
                     canvasContext:
                         pdfContext,
 
                     viewport:
-                        pageViewport
+                        renderedViewport
                 }).promise;
 
                 message.style.display =
@@ -666,11 +706,12 @@
             } catch (error) {
                 console.error(error);
 
-                hideStatus();
-
-                alert(
-                    "Die PDF konnte nicht geöffnet werden."
+                showStatus(
+                    "Die PDF konnte nicht geöffnet werden.",
+                    "error"
                 );
+
+                hideStatusAfterDelay();
             }
         }
 
@@ -687,69 +728,97 @@
 
             planName.textContent = "";
 
+            planName.title = "";
+
             try {
                 showStatus(
-                    "Plankopf wird geprüft ..."
+                    "Planname wird gesucht ..."
                 );
 
                 /*
-                    Zuerst wird versucht, vorhandenen
-                    PDF-Text direkt auszulesen.
+                    1. Versuch:
+                    Den echten Text direkt aus
+                    der PDF lesen.
 
-                    Das ist bei aus Archicad exportierten
-                    Plänen meist genauer als OCR.
+                    Archicad-Pläne enthalten häufig
+                    bereits lesbaren PDF-Text.
                 */
 
-                const directText =
-                    await readPdfText();
+                const directResult =
+                    await readEmbeddedPdfText();
 
-                if (directText) {
-                    showDetectedName(
-                        directText
+                if (directResult.name) {
+                    displayPlanName(
+                        directResult.name,
+                        directResult.fullText
                     );
 
-                    hideStatus();
+                    showStatus(
+                        "Planname erkannt",
+                        "success"
+                    );
+
+                    hideStatusAfterDelay();
 
                     return;
                 }
 
                 /*
-                    Wenn kein geeigneter PDF-Text gefunden
-                    wurde, wird der untere rechte Bereich
-                    mit OCR gelesen.
+                    2. Versuch:
+                    Den Plankopf als Bild mit
+                    OCR auslesen.
                 */
 
-                const ocrText =
-                    await readTitleBlockWithOcr();
+                showStatus(
+                    "Texterkennung wird geladen ..."
+                );
 
-                if (ocrText) {
-                    showDetectedName(
-                        ocrText
+                const ocrResult =
+                    await readPlanTitleWithOcr();
+
+                if (ocrResult.name) {
+                    displayPlanName(
+                        ocrResult.name,
+                        ocrResult.fullText
+                    );
+
+                    showStatus(
+                        "Planname erkannt",
+                        "success"
                     );
                 } else {
                     planName.textContent =
                         "Kein Planname erkannt";
 
                     planName.title =
-                        "Im Plankopf wurde kein geeigneter Text gefunden.";
+                        "Im Plankopf wurde kein geeigneter Planname gefunden.";
+
+                    showStatus(
+                        "Kein Planname erkannt",
+                        "error"
+                    );
                 }
 
-                hideStatus();
+                hideStatusAfterDelay();
 
             } catch (error) {
-                console.error(error);
-
-                hideStatus();
+                console.error(
+                    "Plantester-Fehler:",
+                    error
+                );
 
                 planName.textContent =
-                    "Erkennung fehlgeschlagen";
+                    "Erkennung nicht möglich";
 
                 planName.title =
                     error.message || "";
 
-                alert(
-                    "Der Plankopf konnte nicht gelesen werden."
+                showStatus(
+                    "Erkennung nicht möglich",
+                    "error"
                 );
+
+                hideStatusAfterDelay();
 
             } finally {
                 testButton.disabled =
@@ -757,188 +826,239 @@
             }
         }
 
-        async function readPdfText() {
+        async function readEmbeddedPdfText() {
 
             const textContent =
                 await firstPage.getTextContent();
 
-            const pageWidth =
-                pageViewport.width;
-
-            const pageHeight =
-                pageViewport.height;
-
-            const possibleLines = [];
+            const words = [];
 
             for (
                 const item
                 of textContent.items
             ) {
-                const itemText =
+                const text =
                     cleanText(item.str);
 
                 if (
-                    !itemText ||
-                    itemText.length < 4
+                    !text ||
+                    text.length < 2
                 ) {
                     continue;
                 }
 
-                const transformed =
-                    pdfjsLib.Util
-                        .transform(
-                            pageViewport.transform,
-                            item.transform
-                        );
+                const transform =
+                    pdfjsLib.Util.transform(
+                        renderedViewport.transform,
+                        item.transform
+                    );
 
-                const x =
-                    transformed[4];
-
-                const y =
-                    transformed[5];
-
-                /*
-                    Plankopf-Suchbereich:
-                    rechte 55 Prozent der Seite
-                    und untere 38 Prozent der Seite.
-                */
-
-                const isOnRight =
-                    x >= pageWidth * 0.45;
-
-                const isAtBottom =
-                    y >= pageHeight * 0.62;
-
-                if (
-                    isOnRight &&
-                    isAtBottom
-                ) {
-                    possibleLines.push({
-                        text: itemText,
-                        x: x,
-                        y: y
-                    });
-                }
+                words.push({
+                    text: text,
+                    x: transform[4],
+                    y: transform[5]
+                });
             }
 
-            if (
-                possibleLines.length === 0
-            ) {
-                return "";
+            const allText =
+                words
+                    .map(
+                        function (word) {
+                            return word.text;
+                        }
+                    )
+                    .join("\n");
+
+            /*
+                Zuerst wird auf der ganzen Seite gesucht.
+
+                So wird der gewünschte Name auch erkannt,
+                wenn der Text innerhalb des Plankopfs
+                etwas weiter links oder oben steht.
+            */
+
+            const allLines =
+                groupWordsIntoLines(words);
+
+            let selectedName =
+                selectBestPlanName(
+                    allLines
+                );
+
+            /*
+                Falls die ganze Seite kein Resultat ergibt,
+                wird nochmals gezielt im unteren Bereich
+                gesucht.
+            */
+
+            if (!selectedName) {
+                const lowerWords =
+                    words.filter(
+                        function (word) {
+                            return (
+                                word.y >=
+                                renderedViewport.height *
+                                0.50
+                            );
+                        }
+                    );
+
+                const lowerLines =
+                    groupWordsIntoLines(
+                        lowerWords
+                    );
+
+                selectedName =
+                    selectBestPlanName(
+                        lowerLines
+                    );
             }
 
-            possibleLines.sort(
-                function (a, b) {
-                    const rowDifference =
-                        Math.abs(a.y - b.y);
+            return {
+                name: selectedName,
+                fullText: allText
+            };
+        }
 
-                    if (rowDifference < 12) {
-                        return a.x - b.x;
+        function groupWordsIntoLines(words) {
+
+            const sortedWords =
+                [...words].sort(
+                    function (a, b) {
+                        const yDifference =
+                            a.y - b.y;
+
+                        if (
+                            Math.abs(
+                                yDifference
+                            ) < 14
+                        ) {
+                            return a.x - b.x;
+                        }
+
+                        return yDifference;
                     }
+                );
 
-                    return a.y - b.y;
-                }
-            );
-
-            const groupedLines = [];
+            const rows = [];
 
             for (
-                const item
-                of possibleLines
+                const word
+                of sortedWords
             ) {
-                let matchingLine = null;
+                let matchingRow = null;
 
                 for (
-                    const line
-                    of groupedLines
+                    const row
+                    of rows
                 ) {
                     if (
                         Math.abs(
-                            line.y - item.y
-                        ) < 12
+                            row.y - word.y
+                        ) < 14
                     ) {
-                        matchingLine = line;
+                        matchingRow = row;
+
                         break;
                     }
                 }
 
-                if (matchingLine) {
-                    matchingLine.parts.push(
-                        item
+                if (matchingRow) {
+                    matchingRow.words.push(
+                        word
                     );
                 } else {
-                    groupedLines.push({
-                        y: item.y,
-                        parts: [item]
+                    rows.push({
+                        y: word.y,
+                        words: [word]
                     });
                 }
             }
 
-            const completeLines =
-                groupedLines.map(
-                    function (line) {
-                        line.parts.sort(
+            return rows
+                .map(
+                    function (row) {
+                        row.words.sort(
                             function (a, b) {
                                 return a.x - b.x;
                             }
                         );
 
                         return cleanText(
-                            line.parts
+                            row.words
                                 .map(
-                                    function (part) {
-                                        return part.text;
+                                    function (word) {
+                                        return word.text;
                                     }
                                 )
                                 .join(" ")
                         );
                     }
+                )
+                .filter(
+                    function (line) {
+                        return line.length >= 3;
+                    }
                 );
-
-            return selectBestPlanName(
-                completeLines
-            );
         }
 
-        async function readTitleBlockWithOcr() {
+        async function readPlanTitleWithOcr() {
+
+            /*
+                Dynamisches Laden verhindert,
+                dass ein fehlerhaftes Script-Element
+                die gesamte Seite blockiert.
+            */
+
+            const tesseractModule =
+                await import(
+                    "https://cdn.jsdelivr.net/npm/tesseract.js@5/+esm"
+                );
+
+            const recognize =
+                tesseractModule.recognize ||
+                (
+                    tesseractModule.default &&
+                    tesseractModule.default.recognize
+                );
 
             if (
-                typeof window.Tesseract ===
-                "undefined"
+                typeof recognize !==
+                "function"
             ) {
                 throw new Error(
-                    "Die OCR-Bibliothek wurde nicht geladen."
+                    "Die Texterkennung konnte nicht geladen werden."
                 );
             }
 
             /*
-                Ausschnitt des Plankopfes:
-                rechte 55 Prozent
-                und untere 38 Prozent.
+                Der untere Bereich umfasst 50 Prozent
+                der Planhöhe und die gesamte Planbreite.
+
+                Dadurch wird der vollständige Plankopf
+                erfasst, auch wenn der gesuchte Text
+                innerhalb des Plankopfs weiter links steht.
             */
 
-            const sourceX =
-                Math.floor(
-                    pdfCanvas.width * 0.45
-                );
+            const sourceX = 0;
 
             const sourceY =
                 Math.floor(
-                    pdfCanvas.height * 0.62
+                    pdfCanvas.height *
+                    0.50
                 );
 
             const sourceWidth =
-                pdfCanvas.width -
-                sourceX;
+                pdfCanvas.width;
 
             const sourceHeight =
                 pdfCanvas.height -
                 sourceY;
 
-            ocrPreview.width =
+            ocrCanvas.width =
                 sourceWidth;
 
-            ocrPreview.height =
+            ocrCanvas.height =
                 sourceHeight;
 
             ocrContext.clearRect(
@@ -973,63 +1093,74 @@
             );
 
             const result =
-                await window.Tesseract
-                    .recognize(
-                        ocrPreview,
-                        "deu+eng",
-                        {
-                            logger:
-                                function (progress) {
-
-                                    if (
-                                        progress.status ===
-                                        "recognizing text"
-                                    ) {
-                                        const percentage =
-                                            Math.round(
-                                                progress.progress *
-                                                100
-                                            );
-
-                                        showStatus(
-                                            "Plankopf wird gelesen: " +
-                                            percentage +
-                                            " %"
+                await recognize(
+                    ocrCanvas,
+                    "deu+eng",
+                    {
+                        logger:
+                            function (progress) {
+                                if (
+                                    progress.status ===
+                                    "recognizing text"
+                                ) {
+                                    const percentage =
+                                        Math.round(
+                                            progress.progress *
+                                            100
                                         );
-                                    }
+
+                                    showStatus(
+                                        "Plankopf wird gelesen: " +
+                                        percentage +
+                                        " %"
+                                    );
                                 }
-                        }
-                    );
+                            }
+                    }
+                );
+
+            const completeText =
+                result.data.text || "";
 
             const lines =
-                result.data.text
+                completeText
                     .split(/\r?\n/)
                     .map(cleanText)
                     .filter(
                         function (line) {
                             return (
-                                line.length >= 4 &&
+                                line.length >= 3 &&
                                 /[A-Za-zÄÖÜäöü0-9]/
                                     .test(line)
                             );
                         }
                     );
 
-            planName.title =
-                result.data.text.trim();
+            return {
+                name:
+                    selectBestPlanName(
+                        lines
+                    ),
 
-            return selectBestPlanName(
-                lines
-            );
+                fullText:
+                    completeText
+            };
         }
 
         function selectBestPlanName(lines) {
 
-            const ignoredLabels =
-                /^(datum|massstab|maßstab|projekt|projektname|projektnummer|projekt nr|phase|format|gezeichnet|geprüft|revision|index|plannummer|plan nr|plannr|seite|bauherrschaft|bauherr|architekt|fachplaner|planverfasser|telefon|e-mail|email|adresse)\b/i;
+            if (
+                !lines ||
+                lines.length === 0
+            ) {
+                return "";
+            }
 
-            const ignoredCompanyText =
-                /(weber partner|logistik|räschle|stiftung|helvetia|telefon|www\.|@)/i;
+            const ignoredLabels =
+                /^(datum|massstab|maßstab|projekt|projektname|projektnummer|projekt nr|phase|format|gezeichnet|geprüft|revision|index|plannummer|plan nr|plannr|seite|bauherrschaft|bauherr|architekt|fachplaner|planverfasser|telefon|e-mail|email|adresse|legende|nord|bestand|neu|abbruch)\b/i;
+
+            const ignoredText =
+                /(weber partner|weberpart|logistik|räschle stiftung|helvetia|telefon|www\.|@|copyright)/i;
 
             const candidates =
                 lines
@@ -1038,8 +1169,31 @@
                         function (line) {
                             return (
                                 line.length >= 4 &&
-                                !ignoredLabels.test(line) &&
-                                !ignoredCompanyText.test(line)
+                                !ignoredLabels.test(
+                                    line
+                                ) &&
+                                !ignoredText.test(
+                                    line
+                                )
+                            );
+                        }
+                    )
+                    .map(
+                        function (line) {
+                            return {
+                                text: line,
+                                score:
+                                    scorePlanName(
+                                        line
+                                    )
+                            };
+                        }
+                    )
+                    .filter(
+                        function (candidate) {
+                            return (
+                                candidate.score >
+                                15
                             );
                         }
                     );
@@ -1053,54 +1207,83 @@
             candidates.sort(
                 function (a, b) {
                     return (
-                        scorePlanName(b) -
-                        scorePlanName(a)
+                        b.score -
+                        a.score
                     );
                 }
             );
 
             return candidates[0]
+                .text
                 .slice(0, 140);
         }
 
         function scorePlanName(text) {
 
-            let score =
+            let score = 0;
+
+            score +=
                 Math.min(
                     text.length,
-                    60
+                    50
                 );
 
+            /*
+                Diese Begriffe sind bei Planbezeichnungen
+                besonders wahrscheinlich.
+            */
+
             if (
-                /grundriss|schnitt|ansicht|detail|geschoss|untergeschoss|erdgeschoss|obergeschoss|dachgeschoss|etappe|bauetappe|umbau|neubau|abbruch|bestandesplan|deckenplan|bodenplan|fassade|umgebung|mietfläche|mieterfläche/i
+                /untergeschoss|erdgeschoss|obergeschoss|dachgeschoss|geschoss|grundriss|schnitt|ansicht|detail|fassade|deckenplan|bodenplan|umgebungsplan|bestandesplan|abbruchplan|bauetappe|etappe|mietfläche|mieterfläche/i
                     .test(text)
             ) {
-                score += 70;
+                score += 100;
             }
 
             if (
-                /\d/.test(text)
+                /\b\d+\.\s*(untergeschoss|obergeschoss)\b/i
+                    .test(text)
             ) {
-                score += 7;
+                score += 80;
+            }
+
+            if (
+                /\b(ug|eg|og|dg)\b/i
+                    .test(text)
+            ) {
+                score += 35;
             }
 
             if (
                 /feb|mär|april|mai|juni|juli|aug|sept|okt|nov|dez/i
                     .test(text)
             ) {
-                score += 15;
+                score += 25;
+            }
+
+            if (
+                /\d/.test(text)
+            ) {
+                score += 8;
             }
 
             if (
                 text.length < 7
             ) {
-                score -= 20;
+                score -= 25;
             }
 
             if (
-                text.length > 100
+                text.length > 110
             ) {
-                score -= 35;
+                score -= 40;
+            }
+
+            if (
+                /sanierung|umbau|neubau/i
+                    .test(text)
+            ) {
+                score += 15;
             }
 
             return score;
@@ -1125,24 +1308,30 @@
                 .trim();
         }
 
-        function showDetectedName(text) {
-
+        function displayPlanName(
+            detectedName,
+            completeText
+        ) {
             const finalName =
-                cleanText(text);
+                cleanText(
+                    detectedName
+                );
 
             planName.textContent =
                 finalName;
 
             planName.title =
+                completeText ||
                 finalName;
         }
 
         function resetViewer() {
 
+            clearTimeout(statusTimer);
+
             pdfDocument = null;
             firstPage = null;
-            pageViewport = null;
-            currentFileName = "";
+            renderedViewport = null;
 
             pdfContext.clearRect(
                 0,
@@ -1154,15 +1343,15 @@
             ocrContext.clearRect(
                 0,
                 0,
-                ocrPreview.width,
-                ocrPreview.height
+                ocrCanvas.width,
+                ocrCanvas.height
             );
 
             pdfCanvas.width = 0;
             pdfCanvas.height = 0;
 
-            ocrPreview.width = 0;
-            ocrPreview.height = 0;
+            ocrCanvas.width = 0;
+            ocrCanvas.height = 0;
 
             pdfCanvas.style.display =
                 "none";
@@ -1174,11 +1363,18 @@
                 "pdfLoaded"
             );
 
+            dropzone.classList.remove(
+                "dragover"
+            );
+
             chooseButton.style.display =
                 "block";
 
             testButton.style.display =
                 "none";
+
+            testButton.disabled =
+                false;
 
             closeButton.style.display =
                 "none";
