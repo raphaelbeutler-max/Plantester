@@ -7,6 +7,15 @@
     <title>Plantester</title>
 
     <style>
+        :root {
+            --navy: #0f172a;
+            --royal: #2563eb;
+            --royal-dark: #1d4ed8;
+            --red: #dc2626;
+            --red-dark: #b91c1c;
+            --light: #f3f4f6;
+        }
+
         * {
             box-sizing: border-box;
         }
@@ -15,18 +24,20 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #f3f4f6;
+            background-color: var(--light);
             overflow: hidden;
         }
 
         header {
             height: 60px;
-            padding: 0 25px;
-            background-color: #0f172a;
+            padding: 0 16px 0 24px;
+            background-color: var(--navy);
             color: white;
-            display: flex;
+
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
-            justify-content: space-between;
+            gap: 16px;
         }
 
         header h1 {
@@ -34,18 +45,74 @@
             font-size: 24px;
         }
 
-        #chooseButton {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 6px;
-            background-color: #2563eb;
+        #planName {
             color: white;
-            font-size: 15px;
+            font-size: 17px;
+            font-weight: normal;
+            text-align: center;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            max-width: 720px;
+        }
+
+        .actions {
+            justify-self: end;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button {
+            font-family: Arial, sans-serif;
+            border: none;
             cursor: pointer;
         }
 
+        #testButton,
+        #chooseButton {
+            height: 38px;
+            padding: 0 18px;
+            border-radius: 7px;
+            color: white;
+            background-color: var(--royal);
+            font-size: 15px;
+        }
+
+        #testButton:hover,
         #chooseButton:hover {
-            background-color: #1d4ed8;
+            background-color: var(--royal-dark);
+        }
+
+        #testButton {
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #testButton .gear {
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        #closeButton {
+            display: none;
+
+            width: 38px;
+            height: 38px;
+
+            border-radius: 7px;
+            color: white;
+            background-color: var(--red);
+
+            font-size: 27px;
+            line-height: 1;
+        }
+
+        #closeButton:hover {
+            background-color: var(--red-dark);
         }
 
         #fileInput {
@@ -60,18 +127,23 @@
         #dropzone {
             width: 100%;
             height: 100%;
+
             border: 4px dashed #94a3b8;
             border-radius: 14px;
             background-color: white;
+
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+
+            overflow: auto;
+            position: relative;
+
             transition: 0.2s;
         }
 
         #dropzone.dragover {
-            border-color: #2563eb;
+            border-color: var(--royal);
             background-color: #eff6ff;
         }
 
@@ -84,15 +156,32 @@
         }
 
         #message strong {
-            color: #0f172a;
+            color: var(--navy);
         }
 
-        #viewer {
-            width: 100%;
-            height: 100%;
-            border: none;
+        #pdfCanvas {
             display: none;
+            max-width: none;
             background-color: white;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.18);
+        }
+
+        #status {
+            display: none;
+
+            position: absolute;
+            left: 50%;
+            top: 18px;
+            transform: translateX(-50%);
+
+            padding: 9px 14px;
+            border-radius: 7px;
+
+            color: white;
+            background-color: rgba(15, 23, 42, 0.92);
+
+            font-size: 14px;
+            z-index: 3;
         }
     </style>
 </head>
@@ -100,95 +189,592 @@
 <body>
 
     <header>
+
         <h1>Plantester</h1>
 
-        <div>
-            <button id="chooseButton" type="button">
+        <div
+            id="planName"
+            title="Erkannter Planname">
+        </div>
+
+        <div class="actions">
+
+            <button
+                id="testButton"
+                type="button"
+                title="Plankopf unten rechts prüfen">
+
+                <span class="gear">⚙</span>
+
+                Plantester
+            </button>
+
+            <button
+                id="chooseButton"
+                type="button">
+
                 PDF auswählen
+            </button>
+
+            <button
+                id="closeButton"
+                type="button"
+                title="PDF schliessen"
+                aria-label="PDF schliessen">
+
+                ×
             </button>
 
             <input
                 id="fileInput"
                 type="file"
-                accept="application/pdf,.pdf"
-            >
+                accept="application/pdf,.pdf">
+
         </div>
+
     </header>
 
     <main>
+
         <div id="dropzone">
 
+            <div id="status"></div>
+
             <div id="message">
-                <strong>PDF-Plan hier hineinziehen</strong>
+
+                <strong>
+                    PDF-Plan hier hineinziehen
+                </strong>
+
                 <br>
+
                 oder oben auf „PDF auswählen“ klicken
+
             </div>
 
-            <iframe
-                id="viewer"
-                title="PDF-Planansicht">
-            </iframe>
+            <canvas id="pdfCanvas"></canvas>
 
         </div>
+
     </main>
 
-    <script>
-        const dropzone = document.getElementById("dropzone");
-        const viewer = document.getElementById("viewer");
-        const message = document.getElementById("message");
-        const chooseButton = document.getElementById("chooseButton");
-        const fileInput = document.getElementById("fileInput");
+    https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js    </script>
 
-        let currentPdfUrl = null;
+    <script type="module">
 
-        chooseButton.addEventListener("click", function () {
-            fileInput.click();
-        });
+        import * as pdfjsLib from
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
 
-        fileInput.addEventListener("change", function () {
-            if (fileInput.files.length > 0) {
-                showPdf(fileInput.files[0]);
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+
+        const dropzone =
+            document.getElementById("dropzone");
+
+        const canvas =
+            document.getElementById("pdfCanvas");
+
+        const ctx =
+            canvas.getContext("2d");
+
+        const message =
+            document.getElementById("message");
+
+        const chooseButton =
+            document.getElementById("chooseButton");
+
+        const closeButton =
+            document.getElementById("closeButton");
+
+        const testButton =
+            document.getElementById("testButton");
+
+        const fileInput =
+            document.getElementById("fileInput");
+
+        const planName =
+            document.getElementById("planName");
+
+        const status =
+            document.getElementById("status");
+
+        let pdfDocument = null;
+
+        chooseButton.addEventListener(
+            "click",
+            function () {
+                fileInput.click();
             }
-        });
+        );
 
-        dropzone.addEventListener("dragover", function (event) {
-            event.preventDefault();
-            dropzone.classList.add("dragover");
-        });
+        fileInput.addEventListener(
+            "change",
+            function () {
 
-        dropzone.addEventListener("dragleave", function () {
-            dropzone.classList.remove("dragover");
-        });
+                if (fileInput.files.length > 0) {
+                    loadPdf(fileInput.files[0]);
+                }
 
-        dropzone.addEventListener("drop", function (event) {
-            event.preventDefault();
-            dropzone.classList.remove("dragover");
-
-            if (event.dataTransfer.files.length > 0) {
-                showPdf(event.dataTransfer.files[0]);
             }
-        });
+        );
 
-        function showPdf(file) {
+        closeButton.addEventListener(
+            "click",
+            resetViewer
+        );
+
+        testButton.addEventListener(
+            "click",
+            detectPlanName
+        );
+
+        dropzone.addEventListener(
+            "dragenter",
+            function (event) {
+
+                event.preventDefault();
+
+                dropzone.classList.add("dragover");
+
+            }
+        );
+
+        dropzone.addEventListener(
+            "dragover",
+            function (event) {
+
+                event.preventDefault();
+
+                dropzone.classList.add("dragover");
+
+            }
+        );
+
+        dropzone.addEventListener(
+            "dragleave",
+            function (event) {
+
+                event.preventDefault();
+
+                dropzone.classList.remove("dragover");
+
+            }
+        );
+
+        dropzone.addEventListener(
+            "drop",
+            function (event) {
+
+                event.preventDefault();
+
+                dropzone.classList.remove("dragover");
+
+                const file =
+                    event.dataTransfer.files[0];
+
+                if (file) {
+                    loadPdf(file);
+                }
+
+            }
+        );
+
+        function showStatus(text) {
+
+            status.textContent = text;
+
+            status.style.display = "block";
+
+        }
+
+        function hideStatus() {
+
+            status.style.display = "none";
+
+        }
+
+        async function loadPdf(file) {
+
             const isPdf =
                 file.type === "application/pdf" ||
                 file.name.toLowerCase().endsWith(".pdf");
 
             if (!isPdf) {
+
                 alert("Bitte eine PDF-Datei auswählen.");
+
+                return;
+
+            }
+
+            try {
+
+                showStatus("PDF wird geladen ...");
+
+                const fileBuffer =
+                    await file.arrayBuffer();
+
+                const data =
+                    new Uint8Array(fileBuffer);
+
+                pdfDocument =
+                    await pdfjsLib
+                        .getDocument({ data: data })
+                        .promise;
+
+                const page =
+                    await pdfDocument.getPage(1);
+
+                const baseViewport =
+                    page.getViewport({
+                        scale: 1
+                    });
+
+                const usableWidth =
+                    Math.max(
+                        500,
+                        dropzone.clientWidth - 28
+                    );
+
+                const usableHeight =
+                    Math.max(
+                        400,
+                        dropzone.clientHeight - 28
+                    );
+
+                const fitScale =
+                    Math.min(
+                        usableWidth / baseViewport.width,
+                        usableHeight / baseViewport.height
+                    );
+
+                const renderScale =
+                    Math.max(
+                        1.5,
+                        fitScale * window.devicePixelRatio
+                    );
+
+                const viewport =
+                    page.getViewport({
+                        scale: renderScale
+                    });
+
+                canvas.width =
+                    Math.floor(viewport.width);
+
+                canvas.height =
+                    Math.floor(viewport.height);
+
+                canvas.style.width =
+                    Math.floor(
+                        viewport.width /
+                        window.devicePixelRatio
+                    ) + "px";
+
+                canvas.style.height =
+                    Math.floor(
+                        viewport.height /
+                        window.devicePixelRatio
+                    ) + "px";
+
+                await page.render({
+                    canvasContext: ctx,
+                    viewport: viewport
+                }).promise;
+
+                message.style.display =
+                    "none";
+
+                canvas.style.display =
+                    "block";
+
+                chooseButton.style.display =
+                    "none";
+
+                closeButton.style.display =
+                    "block";
+
+                testButton.style.display =
+                    "flex";
+
+                planName.textContent =
+                    "";
+
+                hideStatus();
+
+            } catch (error) {
+
+                console.error(error);
+
+                hideStatus();
+
+                alert(
+                    "Die PDF konnte nicht geöffnet werden."
+                );
+
+            }
+
+        }
+
+        async function detectPlanName() {
+
+            if (!pdfDocument) {
                 return;
             }
 
-            if (currentPdfUrl) {
-                URL.revokeObjectURL(currentPdfUrl);
+            try {
+
+                showStatus(
+                    "Plankopf wird gelesen ..."
+                );
+
+                testButton.disabled = true;
+
+                const crop =
+                    document.createElement("canvas");
+
+                const sourceX =
+                    Math.floor(
+                        canvas.width * 0.52
+                    );
+
+                const sourceY =
+                    Math.floor(
+                        canvas.height * 0.68
+                    );
+
+                const sourceWidth =
+                    canvas.width - sourceX;
+
+                const sourceHeight =
+                    canvas.height - sourceY;
+
+                crop.width =
+                    sourceWidth;
+
+                crop.height =
+                    sourceHeight;
+
+                const cropContext =
+                    crop.getContext("2d");
+
+                cropContext.drawImage(
+                    canvas,
+
+                    sourceX,
+                    sourceY,
+                    sourceWidth,
+                    sourceHeight,
+
+                    0,
+                    0,
+                    sourceWidth,
+                    sourceHeight
+                );
+
+                const result =
+                    await Tesseract.recognize(
+                        crop,
+                        "deu+eng",
+                        {
+                            logger:
+                                function (progress) {
+
+                                    if (
+                                        progress.status ===
+                                        "recognizing text"
+                                    ) {
+
+                                        const percentage =
+                                            Math.round(
+                                                progress.progress * 100
+                                            );
+
+                                        showStatus(
+                                            "Plankopf wird gelesen: " +
+                                            percentage +
+                                            " %"
+                                        );
+
+                                    }
+
+                                }
+                        }
+                    );
+
+                const lines =
+                    result.data.text
+                        .split(/\r?\n/)
+                        .map(
+                            function (line) {
+
+                                return line
+                                    .replace(/\s+/g, " ")
+                                    .trim();
+
+                            }
+                        )
+                        .filter(
+                            function (line) {
+
+                                return (
+                                    line.length >= 4 &&
+                                    /[A-Za-zÄÖÜäöü0-9]/.test(line)
+                                );
+
+                            }
+                        );
+
+                const ignore =
+                    /^(datum|massstab|projekt|phase|format|gezeichnet|geprüft|revision|plannummer|plan nr|seite)\b/i;
+
+                const candidates =
+                    lines.filter(
+                        function (line) {
+
+                            return !ignore.test(line);
+
+                        }
+                    );
+
+                candidates.sort(
+                    function (a, b) {
+
+                        return score(b) - score(a);
+
+                    }
+                );
+
+                let detected = "";
+
+                if (candidates.length > 0) {
+
+                    detected =
+                        candidates[0];
+
+                } else if (lines.length > 0) {
+
+                    detected =
+                        lines[0];
+
+                }
+
+                detected =
+                    detected.slice(0, 120);
+
+                if (detected) {
+
+                    planName.textContent =
+                        detected;
+
+                } else {
+
+                    planName.textContent =
+                        "Kein Planname erkannt";
+
+                }
+
+                planName.title =
+                    result.data.text.trim() ||
+                    "Kein Text erkannt";
+
+                hideStatus();
+
+            } catch (error) {
+
+                console.error(error);
+
+                hideStatus();
+
+                planName.textContent =
+                    "Erkennung fehlgeschlagen";
+
+                alert(
+                    "Der Plankopf konnte nicht gelesen werden."
+                );
+
+            } finally {
+
+                testButton.disabled =
+                    false;
+
             }
 
-            currentPdfUrl = URL.createObjectURL(file);
-
-            viewer.src = currentPdfUrl;
-            viewer.style.display = "block";
-            message.style.display = "none";
         }
+
+        function score(text) {
+
+            let value =
+                text.length;
+
+            if (
+                /grundriss|schnitt|ansicht|detail|geschoss|etappe|bau/i
+                    .test(text)
+            ) {
+
+                value += 35;
+
+            }
+
+            if (/\d/.test(text)) {
+
+                value += 5;
+
+            }
+
+            if (text.length > 70) {
+
+                value -= 25;
+
+            }
+
+            return value;
+
+        }
+
+        function resetViewer() {
+
+            pdfDocument =
+                null;
+
+            ctx.clearRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            canvas.width =
+                0;
+
+            canvas.height =
+                0;
+
+            canvas.style.display =
+                "none";
+
+            message.style.display =
+                "block";
+
+            chooseButton.style.display =
+                "block";
+
+            closeButton.style.display =
+                "none";
+
+            testButton.style.display =
+                "none";
+
+            planName.textContent =
+                "";
+
+            fileInput.value =
+                "";
+
+            hideStatus();
+
+        }
+
     </script>
 
 </body>
