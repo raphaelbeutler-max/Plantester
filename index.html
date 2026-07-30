@@ -413,4 +413,789 @@
         const testButton =
             document.getElementById("testButton");
 
-    
+        const closeButton =
+            document.getElementById("closeButton");
+
+        const fileInput =
+            document.getElementById("fileInput");
+
+        const planName =
+            document.getElementById("planName");
+
+        const status =
+            document.getElementById("status");
+
+        let pdfDocument = null;
+        let firstPage = null;
+        let pageViewport = null;
+        let currentFileName = "";
+
+        chooseButton.addEventListener(
+            "click",
+            function () {
+                fileInput.click();
+            }
+        );
+
+        fileInput.addEventListener(
+            "change",
+            function () {
+                if (fileInput.files.length > 0) {
+                    loadPdf(fileInput.files[0]);
+                }
+            }
+        );
+
+        closeButton.addEventListener(
+            "click",
+            resetViewer
+        );
+
+        testButton.addEventListener(
+            "click",
+            testPlan
+        );
+
+        dropzone.addEventListener(
+            "dragenter",
+            function (event) {
+                event.preventDefault();
+
+                dropzone.classList.add(
+                    "dragover"
+                );
+            }
+        );
+
+        dropzone.addEventListener(
+            "dragover",
+            function (event) {
+                event.preventDefault();
+
+                dropzone.classList.add(
+                    "dragover"
+                );
+            }
+        );
+
+        dropzone.addEventListener(
+            "dragleave",
+            function (event) {
+                event.preventDefault();
+
+                dropzone.classList.remove(
+                    "dragover"
+                );
+            }
+        );
+
+        dropzone.addEventListener(
+            "drop",
+            function (event) {
+                event.preventDefault();
+
+                dropzone.classList.remove(
+                    "dragover"
+                );
+
+                const file =
+                    event.dataTransfer.files[0];
+
+                if (file) {
+                    loadPdf(file);
+                }
+            }
+        );
+
+        function showStatus(text) {
+            status.textContent = text;
+
+            status.style.display = "block";
+        }
+
+        function hideStatus() {
+            status.style.display = "none";
+        }
+
+        async function loadPdf(file) {
+
+            const isPdf =
+                file.type === "application/pdf" ||
+                file.name
+                    .toLowerCase()
+                    .endsWith(".pdf");
+
+            if (!isPdf) {
+                alert(
+                    "Bitte eine PDF-Datei auswählen."
+                );
+
+                return;
+            }
+
+            try {
+                showStatus(
+                    "PDF wird geladen ..."
+                );
+
+                currentFileName =
+                    file.name.replace(
+                        /\.pdf$/i,
+                        ""
+                    );
+
+                const fileBuffer =
+                    await file.arrayBuffer();
+
+                const pdfData =
+                    new Uint8Array(
+                        fileBuffer
+                    );
+
+                pdfDocument =
+                    await pdfjsLib
+                        .getDocument({
+                            data: pdfData
+                        })
+                        .promise;
+
+                firstPage =
+                    await pdfDocument.getPage(1);
+
+                const originalViewport =
+                    firstPage.getViewport({
+                        scale: 1
+                    });
+
+                const availableWidth =
+                    Math.max(
+                        500,
+                        dropzone.clientWidth - 30
+                    );
+
+                const availableHeight =
+                    Math.max(
+                        400,
+                        dropzone.clientHeight - 30
+                    );
+
+                const fitScale =
+                    Math.min(
+                        availableWidth /
+                        originalViewport.width,
+
+                        availableHeight /
+                        originalViewport.height
+                    );
+
+                const qualityMultiplier =
+                    Math.max(
+                        2,
+                        window.devicePixelRatio
+                    );
+
+                const renderScale =
+                    Math.max(
+                        2,
+                        fitScale *
+                        qualityMultiplier
+                    );
+
+                pageViewport =
+                    firstPage.getViewport({
+                        scale: renderScale
+                    });
+
+                pdfCanvas.width =
+                    Math.floor(
+                        pageViewport.width
+                    );
+
+                pdfCanvas.height =
+                    Math.floor(
+                        pageViewport.height
+                    );
+
+                pdfCanvas.style.width =
+                    Math.floor(
+                        pageViewport.width /
+                        qualityMultiplier
+                    ) + "px";
+
+                pdfCanvas.style.height =
+                    Math.floor(
+                        pageViewport.height /
+                        qualityMultiplier
+                    ) + "px";
+
+                await firstPage.render({
+                    canvasContext:
+                        pdfContext,
+
+                    viewport:
+                        pageViewport
+                }).promise;
+
+                message.style.display =
+                    "none";
+
+                pdfCanvas.style.display =
+                    "block";
+
+                dropzone.classList.add(
+                    "pdfLoaded"
+                );
+
+                chooseButton.style.display =
+                    "none";
+
+                testButton.style.display =
+                    "flex";
+
+                closeButton.style.display =
+                    "flex";
+
+                planName.textContent =
+                    "";
+
+                planName.title =
+                    "";
+
+                hideStatus();
+
+            } catch (error) {
+                console.error(error);
+
+                hideStatus();
+
+                alert(
+                    "Die PDF konnte nicht geöffnet werden."
+                );
+            }
+        }
+
+        async function testPlan() {
+
+            if (
+                !pdfDocument ||
+                !firstPage
+            ) {
+                return;
+            }
+
+            testButton.disabled = true;
+
+            planName.textContent = "";
+
+            try {
+                showStatus(
+                    "Plankopf wird geprüft ..."
+                );
+
+                /*
+                    Zuerst wird versucht, vorhandenen
+                    PDF-Text direkt auszulesen.
+
+                    Das ist bei aus Archicad exportierten
+                    Plänen meist genauer als OCR.
+                */
+
+                const directText =
+                    await readPdfText();
+
+                if (directText) {
+                    showDetectedName(
+                        directText
+                    );
+
+                    hideStatus();
+
+                    return;
+                }
+
+                /*
+                    Wenn kein geeigneter PDF-Text gefunden
+                    wurde, wird der untere rechte Bereich
+                    mit OCR gelesen.
+                */
+
+                const ocrText =
+                    await readTitleBlockWithOcr();
+
+                if (ocrText) {
+                    showDetectedName(
+                        ocrText
+                    );
+                } else {
+                    planName.textContent =
+                        "Kein Planname erkannt";
+
+                    planName.title =
+                        "Im Plankopf wurde kein geeigneter Text gefunden.";
+                }
+
+                hideStatus();
+
+            } catch (error) {
+                console.error(error);
+
+                hideStatus();
+
+                planName.textContent =
+                    "Erkennung fehlgeschlagen";
+
+                planName.title =
+                    error.message || "";
+
+                alert(
+                    "Der Plankopf konnte nicht gelesen werden."
+                );
+
+            } finally {
+                testButton.disabled =
+                    false;
+            }
+        }
+
+        async function readPdfText() {
+
+            const textContent =
+                await firstPage.getTextContent();
+
+            const pageWidth =
+                pageViewport.width;
+
+            const pageHeight =
+                pageViewport.height;
+
+            const possibleLines = [];
+
+            for (
+                const item
+                of textContent.items
+            ) {
+                const itemText =
+                    cleanText(item.str);
+
+                if (
+                    !itemText ||
+                    itemText.length < 4
+                ) {
+                    continue;
+                }
+
+                const transformed =
+                    pdfjsLib.Util
+                        .transform(
+                            pageViewport.transform,
+                            item.transform
+                        );
+
+                const x =
+                    transformed[4];
+
+                const y =
+                    transformed[5];
+
+                /*
+                    Plankopf-Suchbereich:
+                    rechte 55 Prozent der Seite
+                    und untere 38 Prozent der Seite.
+                */
+
+                const isOnRight =
+                    x >= pageWidth * 0.45;
+
+                const isAtBottom =
+                    y >= pageHeight * 0.62;
+
+                if (
+                    isOnRight &&
+                    isAtBottom
+                ) {
+                    possibleLines.push({
+                        text: itemText,
+                        x: x,
+                        y: y
+                    });
+                }
+            }
+
+            if (
+                possibleLines.length === 0
+            ) {
+                return "";
+            }
+
+            possibleLines.sort(
+                function (a, b) {
+                    const rowDifference =
+                        Math.abs(a.y - b.y);
+
+                    if (rowDifference < 12) {
+                        return a.x - b.x;
+                    }
+
+                    return a.y - b.y;
+                }
+            );
+
+            const groupedLines = [];
+
+            for (
+                const item
+                of possibleLines
+            ) {
+                let matchingLine = null;
+
+                for (
+                    const line
+                    of groupedLines
+                ) {
+                    if (
+                        Math.abs(
+                            line.y - item.y
+                        ) < 12
+                    ) {
+                        matchingLine = line;
+                        break;
+                    }
+                }
+
+                if (matchingLine) {
+                    matchingLine.parts.push(
+                        item
+                    );
+                } else {
+                    groupedLines.push({
+                        y: item.y,
+                        parts: [item]
+                    });
+                }
+            }
+
+            const completeLines =
+                groupedLines.map(
+                    function (line) {
+                        line.parts.sort(
+                            function (a, b) {
+                                return a.x - b.x;
+                            }
+                        );
+
+                        return cleanText(
+                            line.parts
+                                .map(
+                                    function (part) {
+                                        return part.text;
+                                    }
+                                )
+                                .join(" ")
+                        );
+                    }
+                );
+
+            return selectBestPlanName(
+                completeLines
+            );
+        }
+
+        async function readTitleBlockWithOcr() {
+
+            if (
+                typeof window.Tesseract ===
+                "undefined"
+            ) {
+                throw new Error(
+                    "Die OCR-Bibliothek wurde nicht geladen."
+                );
+            }
+
+            /*
+                Ausschnitt des Plankopfes:
+                rechte 55 Prozent
+                und untere 38 Prozent.
+            */
+
+            const sourceX =
+                Math.floor(
+                    pdfCanvas.width * 0.45
+                );
+
+            const sourceY =
+                Math.floor(
+                    pdfCanvas.height * 0.62
+                );
+
+            const sourceWidth =
+                pdfCanvas.width -
+                sourceX;
+
+            const sourceHeight =
+                pdfCanvas.height -
+                sourceY;
+
+            ocrPreview.width =
+                sourceWidth;
+
+            ocrPreview.height =
+                sourceHeight;
+
+            ocrContext.clearRect(
+                0,
+                0,
+                sourceWidth,
+                sourceHeight
+            );
+
+            ocrContext.fillStyle =
+                "white";
+
+            ocrContext.fillRect(
+                0,
+                0,
+                sourceWidth,
+                sourceHeight
+            );
+
+            ocrContext.drawImage(
+                pdfCanvas,
+
+                sourceX,
+                sourceY,
+                sourceWidth,
+                sourceHeight,
+
+                0,
+                0,
+                sourceWidth,
+                sourceHeight
+            );
+
+            const result =
+                await window.Tesseract
+                    .recognize(
+                        ocrPreview,
+                        "deu+eng",
+                        {
+                            logger:
+                                function (progress) {
+
+                                    if (
+                                        progress.status ===
+                                        "recognizing text"
+                                    ) {
+                                        const percentage =
+                                            Math.round(
+                                                progress.progress *
+                                                100
+                                            );
+
+                                        showStatus(
+                                            "Plankopf wird gelesen: " +
+                                            percentage +
+                                            " %"
+                                        );
+                                    }
+                                }
+                        }
+                    );
+
+            const lines =
+                result.data.text
+                    .split(/\r?\n/)
+                    .map(cleanText)
+                    .filter(
+                        function (line) {
+                            return (
+                                line.length >= 4 &&
+                                /[A-Za-zÄÖÜäöü0-9]/
+                                    .test(line)
+                            );
+                        }
+                    );
+
+            planName.title =
+                result.data.text.trim();
+
+            return selectBestPlanName(
+                lines
+            );
+        }
+
+        function selectBestPlanName(lines) {
+
+            const ignoredLabels =
+                /^(datum|massstab|maßstab|projekt|projektname|projektnummer|projekt nr|phase|format|gezeichnet|geprüft|revision|index|plannummer|plan nr|plannr|seite|bauherrschaft|bauherr|architekt|fachplaner|planverfasser|telefon|e-mail|email|adresse)\b/i;
+
+            const ignoredCompanyText =
+                /(weber partner|logistik|räschle|stiftung|helvetia|telefon|www\.|@)/i;
+
+            const candidates =
+                lines
+                    .map(cleanText)
+                    .filter(
+                        function (line) {
+                            return (
+                                line.length >= 4 &&
+                                !ignoredLabels.test(line) &&
+                                !ignoredCompanyText.test(line)
+                            );
+                        }
+                    );
+
+            if (
+                candidates.length === 0
+            ) {
+                return "";
+            }
+
+            candidates.sort(
+                function (a, b) {
+                    return (
+                        scorePlanName(b) -
+                        scorePlanName(a)
+                    );
+                }
+            );
+
+            return candidates[0]
+                .slice(0, 140);
+        }
+
+        function scorePlanName(text) {
+
+            let score =
+                Math.min(
+                    text.length,
+                    60
+                );
+
+            if (
+                /grundriss|schnitt|ansicht|detail|geschoss|untergeschoss|erdgeschoss|obergeschoss|dachgeschoss|etappe|bauetappe|umbau|neubau|abbruch|bestandesplan|deckenplan|bodenplan|fassade|umgebung|mietfläche|mieterfläche/i
+                    .test(text)
+            ) {
+                score += 70;
+            }
+
+            if (
+                /\d/.test(text)
+            ) {
+                score += 7;
+            }
+
+            if (
+                /feb|mär|april|mai|juni|juli|aug|sept|okt|nov|dez/i
+                    .test(text)
+            ) {
+                score += 15;
+            }
+
+            if (
+                text.length < 7
+            ) {
+                score -= 20;
+            }
+
+            if (
+                text.length > 100
+            ) {
+                score -= 35;
+            }
+
+            return score;
+        }
+
+        function cleanText(text) {
+
+            if (!text) {
+                return "";
+            }
+
+            return text
+                .replace(/\s+/g, " ")
+                .replace(
+                    /^[|,;:._\-]+/,
+                    ""
+                )
+                .replace(
+                    /[|,;:._\-]+$/,
+                    ""
+                )
+                .trim();
+        }
+
+        function showDetectedName(text) {
+
+            const finalName =
+                cleanText(text);
+
+            planName.textContent =
+                finalName;
+
+            planName.title =
+                finalName;
+        }
+
+        function resetViewer() {
+
+            pdfDocument = null;
+            firstPage = null;
+            pageViewport = null;
+            currentFileName = "";
+
+            pdfContext.clearRect(
+                0,
+                0,
+                pdfCanvas.width,
+                pdfCanvas.height
+            );
+
+            ocrContext.clearRect(
+                0,
+                0,
+                ocrPreview.width,
+                ocrPreview.height
+            );
+
+            pdfCanvas.width = 0;
+            pdfCanvas.height = 0;
+
+            ocrPreview.width = 0;
+            ocrPreview.height = 0;
+
+            pdfCanvas.style.display =
+                "none";
+
+            message.style.display =
+                "block";
+
+            dropzone.classList.remove(
+                "pdfLoaded"
+            );
+
+            chooseButton.style.display =
+                "block";
+
+            testButton.style.display =
+                "none";
+
+            closeButton.style.display =
+                "none";
+
+            planName.textContent =
+                "";
+
+            planName.title =
+                "";
+
+            fileInput.value =
+                "";
+
+            hideStatus();
+        }
+
+    </script>
+
+</body>
+</html>
